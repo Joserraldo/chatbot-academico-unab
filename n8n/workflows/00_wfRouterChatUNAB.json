@@ -1,0 +1,482 @@
+{
+  "id": "wfRouterChatUNAB",
+  "name": "00 Router chat (webhook)",
+  "active": false,
+  "nodes": [
+    {
+      "id": "c0d3f95a-d4a5-5d51-8b62-8f110dbc2288",
+      "name": "Nota 0",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        -260
+      ],
+      "parameters": {
+        "content": "## Router del chatbot\nWebhook POST /webhook/chat (header X-Chatbot-Key)\n1. Normaliza y aplica **guardrails de entrada**\n2. Clasifica la **intención** con el LLM\n3. Llama al **sub-workflow** 01-04\n4. **Guardrail de salida**, log en `chat_log` y respuesta JSON",
+        "width": 520,
+        "height": 220
+      }
+    },
+    {
+      "id": "55edfd74-6dfe-5726-a9b4-3655564fa181",
+      "name": "Webhook chat",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        300
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "chat",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "credWebhookKey01",
+          "name": "Webhook X-Chatbot-Key"
+        }
+      },
+      "webhookId": "40834428-c55d-5d94-9fd0-69d436aa6df6"
+    },
+    {
+      "id": "bccf8d2a-745b-5d69-826f-cde0f0f32984",
+      "name": "Guardrail entrada",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        300
+      ],
+      "parameters": {
+        "jsCode": "// ===== Guardrail de ENTRADA (determinista, sin costo de LLM) =====\nconst b = $json.body ?? $json;\nconst mensaje = String(b.mensaje ?? '').trim();\nconst codigo = String(b.codigoEstudiante ?? '').trim().toUpperCase();\nconst sessionId = String(b.sessionId ?? '').trim().slice(0, 80) || `anon-${Date.now()}`;\n\nconst reglas = [\n  [!mensaje, 'vacio', 'Escribe tu pregunta, por favor.'],\n  [mensaje.length > 1000, 'muy_largo', 'Tu mensaje es muy largo; resúmelo en menos de 1000 caracteres.'],\n  [!/^U\\d{8}$/.test(codigo), 'codigo_invalido', 'Necesito tu código estudiantil (U seguido de 8 dígitos) para ayudarte.'],\n  [/(ignora|olvida|ignore)\\b.{0,30}(instrucciones|reglas|instructions|prompt)|system prompt|jailbreak|modo desarrollador|\\bDAN\\b|act[uú]a como (si|un)/i.test(mensaje),\n    'prompt_injection', 'No puedo cambiar mis reglas de funcionamiento. ¿En qué tema académico te ayudo?'],\n  [/\\b(drop|delete|truncate|alter)\\s+(table|from|schema)\\b|;\\s*--|\\bunion\\s+select\\b/i.test(mensaje),\n    'sql_injection', 'Esa consulta no está permitida.'],\n  [(mensaje.match(/U\\d{8}/gi) || []).some(c => c.toUpperCase() !== codigo),\n    'otro_estudiante', 'Solo puedo darte información de tu propio código estudiantil.'],\n  [/\\b(?:\\d[ -]?){13,19}\\b/.test(mensaje) || /contrase(ñ|n)a\\s*[:=]/i.test(mensaje),\n    'dato_sensible', 'Por seguridad no compartas números de tarjeta ni contraseñas en el chat.'],\n  [/\\b(hp|gonorrea|malparid[oa]|idiota|estúpid[oa])\\b/i.test(mensaje),\n    'lenguaje', 'Mantengamos una conversación respetuosa. ¿En qué te ayudo?'],\n];\nconst hit = reglas.find(r => r[0]);\nreturn [{ json: {\n  sessionId, codigoEstudiante: codigo, mensaje,\n  bloqueado: Boolean(hit), motivo: hit ? hit[1] : null, motivo_usuario: hit ? hit[2] : null,\n}}];"
+      }
+    },
+    {
+      "id": "1ea0eb9c-1631-5867-a544-dcb53f97cb85",
+      "name": "¿Bloqueado?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        440,
+        300
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.bloqueado }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "4673ef00-3e52-5e2d-9e50-834bc08f1bf7",
+      "name": "Respuesta bloqueo",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        680,
+        100
+      ],
+      "parameters": {
+        "jsCode": "return [{ json: { respuesta: $json.motivo_usuario, fuentes: [], intencion: 'bloqueado' } }];"
+      }
+    },
+    {
+      "id": "bfcebaca-82c9-572d-83b3-a7a3628e76f4",
+      "name": "Clasificar intención",
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1,
+      "position": [
+        680,
+        360
+      ],
+      "parameters": {
+        "inputText": "={{ $json.mensaje }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "general",
+              "description": "Preguntas generales o institucionales: insignia de competencias digitales, reglamento, requisitos de grado, cómo funciona la matrícula, recomendaciones de estudio, investigación, qué cursos se ven en el plan."
+            },
+            {
+              "category": "calendario",
+              "description": "Fechas: inscripciones, pagos, pruebas diagnósticas, inicio de cursos o clases, exámenes, solicitud de grado."
+            },
+            {
+              "category": "historial",
+              "description": "Datos PERSONALES del estudiante: su estado de matrícula, avance, créditos, notas, promedio, cursos que ha tomado o le faltan, competencias digitales que ha tomado, cuántos semestres le faltan, alertas de requisitos, recomendaciones personalizadas."
+            },
+            {
+              "category": "noticias",
+              "description": "Novedades, noticias, nuevos cursos, convocatorias, becas, eventos o certificaciones recientes."
+            }
+          ]
+        },
+        "options": {
+          "fallback": "other",
+          "systemPromptTemplate": "Clasifica la consulta de un estudiante universitario en UNA categoría. Si menciona 'mi', 'mis', 'me faltan', 'he tomado' o su avance, es historial. Responde solo con el JSON pedido.\n{format_instructions}"
+        }
+      }
+    },
+    {
+      "id": "515aeea0-d6f8-5140-a38c-fd3d68fdc5c0",
+      "name": "LLM clasificador",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        700,
+        580
+      ],
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "={{ $env.LLM_MODEL }}",
+          "mode": "id"
+        },
+        "options": {
+          "temperature": 0,
+          "maxTokens": 900,
+          "timeout": 60000
+        }
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "credLlmChat00001",
+          "name": "LLM chat (b.ai / OpenAI compatible)"
+        }
+      }
+    },
+    {
+      "id": "ccab3e73-7e36-5ecb-8961-96169fe493b3",
+      "name": "Sub 01 General RAG",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        1000,
+        160
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "wf01GeneralRAG00"
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      }
+    },
+    {
+      "id": "133238ab-8607-5539-b637-49386a8b0eda",
+      "name": "Sub 02 Calendario",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        1000,
+        320
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "wf02Calendario00"
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      }
+    },
+    {
+      "id": "146dca17-a207-502d-9c6c-5dc6f7fab497",
+      "name": "Sub 03 Cursos e historial",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        1000,
+        480
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "wf03CursosMCP000"
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      }
+    },
+    {
+      "id": "efb968ec-c0ba-5dc0-ac5c-731b1b003f51",
+      "name": "Sub 04 Noticias",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        1000,
+        640
+      ],
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "wf04Noticias0000"
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      }
+    },
+    {
+      "id": "e1b17c76-10ab-5034-bc96-6ed6fdbc37f4",
+      "name": "Guardrail salida",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1280,
+        300
+      ],
+      "parameters": {
+        "jsCode": "// ===== Guardrail de SALIDA =====\nconst req = $('Guardrail entrada').first().json;\nconst r = $json;\nconst intencion = r.intencion;\nlet texto = String(r.respuesta ?? r.output ?? r.text ?? '').trim();\n// 1) nunca filtrar códigos de otros estudiantes ni correos\ntexto = texto.replace(/U\\d{8}/gi, m => m.toUpperCase() === req.codigoEstudiante ? m : '[código oculto]');\ntexto = texto.replace(/[\\w.+-]+@[\\w-]+\\.[\\w.]+/g, '[correo oculto]');\n// 2) no exponer detalles técnicos internos\nif (/(stack trace|traceback|psycopg|SQLSTATE|ECONNREFUSED|api[_ ]?key)/i.test(texto)) {\n  texto = 'Tuve un problema técnico consultando la información. Intenta de nuevo en unos minutos.';\n}\n// 3) longitud y vacío\nif (!texto) texto = 'No encontré información para responder eso. ¿Puedes reformular la pregunta?';\nif (texto.length > 2500) texto = texto.slice(0, 2500) + '…';\nreturn [{ json: {\n  ...req, intencion: req.bloqueado ? 'bloqueado' : (intencion || 'general'),\n  respuesta: texto, fuentes: r.fuentes ?? [],\n}}];"
+      }
+    },
+    {
+      "id": "778c9bdf-26ae-5de2-be32-30b8a1c0fed6",
+      "name": "Log chat",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1500,
+        300
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO academico.chat_log (session_id, codigo_estudiante, intencion, mensaje, respuesta, bloqueado, motivo_bloqueo) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+        "options": {
+          "queryReplacement": "={{ [ $json.sessionId, $json.codigoEstudiante, $json.intencion, $json.mensaje, $json.respuesta, $json.bloqueado, $json.motivo ] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "credPgUnab000001",
+          "name": "Postgres UNAB"
+        }
+      },
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "af3597eb-9066-564c-8831-a6b4ae036c5a",
+      "name": "Responder",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1720,
+        300
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ respuesta: $('Guardrail salida').first().json.respuesta, intencion: $('Guardrail salida').first().json.intencion, fuentes: $('Guardrail salida').first().json.fuentes }) }}",
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "LLM clasificador": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Clasificar intención",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clasificar intención": {
+      "main": [
+        [
+          {
+            "node": "Sub 01 General RAG",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Sub 02 Calendario",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Sub 03 Cursos e historial",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Sub 04 Noticias",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Sub 01 General RAG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook chat": {
+      "main": [
+        [
+          {
+            "node": "Guardrail entrada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardrail entrada": {
+      "main": [
+        [
+          {
+            "node": "¿Bloqueado?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Bloqueado?": {
+      "main": [
+        [
+          {
+            "node": "Respuesta bloqueo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Clasificar intención",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respuesta bloqueo": {
+      "main": [
+        [
+          {
+            "node": "Guardrail salida",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sub 01 General RAG": {
+      "main": [
+        [
+          {
+            "node": "Guardrail salida",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sub 02 Calendario": {
+      "main": [
+        [
+          {
+            "node": "Guardrail salida",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sub 03 Cursos e historial": {
+      "main": [
+        [
+          {
+            "node": "Guardrail salida",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sub 04 Noticias": {
+      "main": [
+        [
+          {
+            "node": "Guardrail salida",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardrail salida": {
+      "main": [
+        [
+          {
+            "node": "Log chat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log chat": {
+      "main": [
+        [
+          {
+            "node": "Responder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {}
+}

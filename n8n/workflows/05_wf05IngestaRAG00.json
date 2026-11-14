@@ -1,0 +1,272 @@
+{
+  "id": "wf05IngestaRAG00",
+  "name": "05 Ingesta RAG (chunking + embeddings)",
+  "active": false,
+  "nodes": [
+    {
+      "id": "1f497395-1b27-505b-a14d-65f7f56b680b",
+      "name": "Nota 0",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -60,
+        20
+      ],
+      "parameters": {
+        "content": "## 05 Ingesta y embeddings\nEjecutar manualmente cada vez que cambien los documentos de `data/docs_ccd/`.\nLee los .md → extrae texto → **chunking** (800/120) → **embeddings** → PGVector (`rag_documentos`).\nPrimero borra la tabla para no duplicar fragmentos.",
+        "width": 520,
+        "height": 200
+      }
+    },
+    {
+      "id": "88ff69cb-941e-5c1c-86f2-b3e62eca3d9d",
+      "name": "Ejecutar ingesta",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        300
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "1a4ff51c-cdbb-5a0f-bbfb-8003ab24af37",
+      "name": "Limpiar tabla",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        200,
+        300
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "DROP TABLE IF EXISTS public.rag_documentos;",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "credPgUnab000001",
+          "name": "Postgres UNAB"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "id": "76400e83-bc5a-5744-87ad-cffde1212838",
+      "name": "Leer documentos",
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        400,
+        300
+      ],
+      "parameters": {
+        "operation": "read",
+        "fileSelector": "/files/docs_ccd/*.md",
+        "options": {}
+      },
+      "executeOnce": false
+    },
+    {
+      "id": "9b8034e8-4327-58e4-a2f9-61a7bfd2d554",
+      "name": "Extraer texto",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        600,
+        300
+      ],
+      "parameters": {
+        "operation": "text",
+        "options": {}
+      }
+    },
+    {
+      "id": "4bd50624-1b5a-5939-b591-f9f3094a175c",
+      "name": "Preparar",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        300
+      ],
+      "parameters": {
+        "jsCode": "// Une el texto extraído con el nombre del archivo para guardarlo como metadata.source\nconst archivos = $('Leer documentos').all();\nreturn $input.all().map((it, i) => ({ json: {\n  text: String(it.json.data ?? ''),\n  source: archivos[i]?.binary?.data?.fileName ?? `documento_${i + 1}.md`,\n}}));"
+      }
+    },
+    {
+      "id": "e257f044-f6a8-5d5c-b47d-fa06a13fa949",
+      "name": "PGVector insertar",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePGVector",
+      "typeVersion": 1.1,
+      "position": [
+        1020,
+        300
+      ],
+      "parameters": {
+        "mode": "insert",
+        "tableName": "rag_documentos",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "credPgUnab000001",
+          "name": "Postgres UNAB"
+        }
+      }
+    },
+    {
+      "id": "311be8fd-f3a7-5de2-992a-e9159ee71c1b",
+      "name": "Embeddings",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        960,
+        520
+      ],
+      "parameters": {
+        "model": "={{ $env.EMBED_MODEL }}",
+        "options": {}
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "credLlmEmbed0001",
+          "name": "LLM embeddings (OpenAI compatible)"
+        }
+      }
+    },
+    {
+      "id": "ed9929be-5eec-507e-8c03-55fa5681584a",
+      "name": "Cargador",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        520
+      ],
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $json.text }}",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "source",
+                "value": "={{ $json.source }}"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "8617e572-c62c-53a8-a604-afed4b016c1e",
+      "name": "Chunking",
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        1140,
+        720
+      ],
+      "parameters": {
+        "chunkSize": 800,
+        "chunkOverlap": 120,
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "Ejecutar ingesta": {
+      "main": [
+        [
+          {
+            "node": "Limpiar tabla",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limpiar tabla": {
+      "main": [
+        [
+          {
+            "node": "Leer documentos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leer documentos": {
+      "main": [
+        [
+          {
+            "node": "Extraer texto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer texto": {
+      "main": [
+        [
+          {
+            "node": "Preparar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar": {
+      "main": [
+        [
+          {
+            "node": "PGVector insertar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings": {
+      "ai_embedding": [
+        [
+          {
+            "node": "PGVector insertar",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cargador": {
+      "ai_document": [
+        [
+          {
+            "node": "PGVector insertar",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chunking": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Cargador",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {}
+}
