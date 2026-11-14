@@ -1,0 +1,442 @@
+{
+  "programa": "Ingeniería de Sistemas",
+  "universidad": "Universidad Autónoma de Bucaramanga (UNAB)",
+  "fuente": "Planes de estudio vigente.pdf",
+  "version_plan": null,
+  "creditos_totales": 151,
+  "notas": "Plan general de estudios vigente del programa de Ingeniería de Sistemas (2 páginas). El PDF no muestra año ni número de versión, prerrequisitos, requisitos de grado, requisito de inglés ni competencias digitales, por eso prerrequisitos va vacío en todos los cursos. Hay 9 periodos académicos. Tipo de crédito: E = electivo, O = obligatorio; las electivas son las filas con código de línea ELCT. La columna de línea de conocimiento (MATE, INGE, COMP, etc.) se guarda en 'area' tal cual aparece; el PDF no trae la leyenda de esos códigos. Fila de totales del PDF: 151 créditos, 100%, un valor 39 sin identificar (no coincide con las 48 filas), 9 periodos, horas T=2112, P=560, TP=0, I=4592. Horas por curso (T, P, TP, I) no se incluyen en el formato solicitado.",
+  "cursos": [
+    {
+      "codigo": null,
+      "nombre": "Cálculo Diferencial",
+      "semestre": 1,
+      "creditos": 4,
+      "tipo": "obligatorio",
+      "area": "MATE",
+      "prerrequisitos": []
+    },
+    {
+      "codigo": null,
+      "nombre": "Álgebra Lineal",
+      "semestre": 1,
+      "creditos": 3,
+      "tipo": "obligatorio",
+      "area": "MATE",
+      "prerrequisitos": []
+    },
+    {
+      "codigo": null,
+      "nombre": "Seminario de Ingeniería I",
+      "semestre": 1,
+      "creditos": 2,
+      "tipo": "obligatorio",
+      "area": "INGE",
+      "prerrequisitos": []
+    },
+    {
+      "codigo": null,
+      "nombre": "Fundamentos de Programación",
+      "semestre": 1,
+      "creditos": 3,
+      "tipo": "obligatorio",
+      "area": "COMP",
+      "prerrequisitos": []
+    },
+    {
+      "codigo": null,
+      "nombre": "Expresión",
+      "semestre": 1,
+      "creditos": 4,
+      "tipo": "obligatorio",
+      "area": "EXPR",
+      "prerrequisitos": []
+    },
+    {
+      "codigo": null,
+      "nombre": "Cálculo Integral",
+      "semestre": 2,
+      "creditos": 4,
+      "tipo": "obligatorio",
+      "area": "MATE",
+      "prerrequisitos": []
+    },
+    {
+      "codigo": null,
+      "nombre": "Mecánica y Laboratorio",
+      "semestre": 2,
+      "creditos": 3,
+      "tipo": "obligatorio",
+      "area": "FISI",
+      "prerrequisitos": []
+    },
+    {
+      "codigo": null,
+      "nombre": "Programación de Computadores",
+      "semestre": 2,
+      "creditos": 3,
+      "tipo": "obligatorio",
+      "area": "COMP",
+      "prerrequisitos": []
+    },
+    {
+      "codigo": null,
+      "nombre": "Bienestar I",
+      "semestre": 2,
+      "creditos": 2,
+      "tipo": "obligatorio",
+      "area": "BUDH",
+      "prerrequisitos": []
+    },
+    {
+      "codigo": null,
+      "nombre": "Identidad",
+      "semestre": 2,
+      "creditos": 3,
+      "tipo": "obligatorio",
+      "area": "SOCI",
+      "prerrequisitos": []
+    },
+    {
+      "codigo": null,
+      "nombre": "Diseño de Interfaces de Usuario",
+      "semestre": 2,
+      "creditos": 3,
+      "tipo": "obligatorio",
+      "area": "DISE",
+      "prerrequisitos": []
+    },
+    {
+      "codigo": null,
+      "nombre": "Cálculo en varias Variables",
+      "semestre": 3,
+      "creditos": 3,
+      "tipo": "obligatorio",
+      "area": "MATE",
+      "prerrequisitos": []
+    },
+    {
+      "codigo": null,
+      "nombre": "Electromagnetismo y Laboratorio",
+      "semestre": 3,
+      "creditos": 3,
+      "tipo": "obligatorio",
+      "area": "FISI",
+      "prerrequisitos": []
+    },
+    {
+      "codigo": null,
+      "nombre": "Seminario de Ingeniería II",
+      "semestre": 3,
+      "creditos": 2,
+      "tipo": "obligatorio",
+      "area": "INGE",
+      "prerrequisitos": []
+    },
+    {
+      "codigo": null,
+      "nombre": "Estructura de Datos y Análisis de Algoritmos",
+      "semestre": 3,
+      "creditos": 3,
+      "tipo": "obligatorio",
+      "area": "COMP",
+      "prerrequisitos": []
+    },
+    {
+      "codigo": null,
+      "nombre": "Matemáticas Computacionales",
+      "semestre": 3,
+      "creditos": 3,
+      "tipo": "obligatorio",
+      "area": "MATE",
+      "prerrequisitos": []
+    },
+    {
+      "codigo": null,
+      "nombre": "Creatividad",
+      "semestre": 3,
+      "creditos": 3,
+      "tipo": "obligatorio",
+      "area": "CRAT",
+      "prerrequisitos": []
+    },
+    {
+      "codigo": null,
+      "nombre": "Ecuaciones Diferenciales",
+      "semestre": 4,
+      "creditos": 3,
+      "tipo": "obligatorio",
+      "area": "MATE",
+      "prerrequisitos": []
+    },
+    {
+      "codigo": null,
+      "nombre": "Estadística General",
+      "semestre": 4,
+      "creditos": 3,
+      "tipo": "obligatorio",
+      "area": "ESTA",
+      "prerrequisitos": []
+    },
+    {
+      "codigo": null,
+      "nombre": "Tecnologías Móviles",
+      "semestre": 4,
+      "creditos": 3,
+      "tipo": "obligatorio",
+      "area": "TELE",
+      "prerrequisitos": []
+    },
+    {
+      "codigo": null,
+      "nombre": "Desarrollo Multimedia",
+      "semestre": 4,
+      "creditos": 3,
+      "tipo": "obligatorio",
+      "area": "PRAM",
+      "prerrequisitos": []
+    },
+    {
+      "codigo": null,
+      "nombre": "Bases de Datos I",
+      "semestre": 4,
+      "creditos": 3,
+      "tipo": "obligatorio",
+      "area": "INFO",
+      "prerrequisitos": []
+    },
+    {
+      "codigo": null,
+      "nombre": "Inteligencia Artificial",
+      "semestre": 4,
+      "creditos": 3,
+      "tipo": "obligatorio",
+      "area": "COMP",
+      "prerrequisitos": []
+    },
+    {
+      "codigo": null,
+      "nombre": "Infraestructura Tecnológica",
+      "semestre": 5,
+      "creditos": 3,
+      "tipo": "obligatorio",
+      "area": "COMP",
+      "prerrequisitos": []
+    },
+    {
+      "codigo": null,
+      "nombre": "Bases de Datos II",
+      "semestre": 5,
+      "creditos": 3,
+      "tipo": "obligatorio",
+      "area": "INFO",
+      "prerrequisitos": []
+    },
+    {
+      "codigo": null,
+      "nombre": "Ingeniería de Software I",
+      "semestre": 5,
+      "creditos": 3,
+      "tipo": "obligatorio",
+      "area": "SOFT",
+      "prerrequisitos": []
+    },
+    {
+      "codigo": null,
+      "nombre": "Arquitectura de Software",
+      "semestre": 5,
+      "creditos": 3,
+      "tipo": "obligatorio",
+      "area": "SOFT",
+      "prerrequisitos": []
+    },
+    {
+      "codigo": null,
+      "nombre": "Electiva de Profundización",
+      "semestre": 5,
+      "creditos": 3,
+      "tipo": "electiva",
+      "area": "ELCT",
+      "prerrequisitos": []
+    },
+    {
+      "codigo": null,
+      "nombre": "Bienestar II",
+      "semestre": 5,
+      "creditos": 2,
+      "tipo": "obligatorio",
+      "area": "BUTL",
+      "prerrequisitos": []
+    },
+    {
+      "codigo": null,
+      "nombre": "Internet de las Cosas",
+      "semestre": 6,
+      "creditos": 3,
+      "tipo": "obligatorio",
+      "area": "TELE",
+      "prerrequisitos": []
+    },
+    {
+      "codigo": null,
+      "nombre": "Ciencias de Datos",
+      "semestre": 6,
+      "creditos": 3,
+      "tipo": "obligatorio",
+      "area": "INFO",
+      "prerrequisitos": []
+    },
+    {
+      "codigo": null,
+      "nombre": "Ingeniería de Software II",
+      "semestre": 6,
+      "creditos": 3,
+      "tipo": "obligatorio",
+      "area": "SOFT",
+      "prerrequisitos": []
+    },
+    {
+      "codigo": null,
+      "nombre": "Teoría de Sistemas y Organizaciones",
+      "semestre": 6,
+      "creditos": 3,
+      "tipo": "obligatorio",
+      "area": "SIST",
+      "prerrequisitos": []
+    },
+    {
+      "codigo": null,
+      "nombre": "Ética de la Ingeniería de Sistemas",
+      "semestre": 6,
+      "creditos": 2,
+      "tipo": "obligatorio",
+      "area": "FILO",
+      "prerrequisitos": []
+    },
+    {
+      "codigo": null,
+      "nombre": "Electiva de Profundización",
+      "semestre": 6,
+      "creditos": 3,
+      "tipo": "electiva",
+      "area": "ELCT",
+      "prerrequisitos": []
+    },
+    {
+      "codigo": null,
+      "nombre": "Investigación de Operaciones I",
+      "semestre": 7,
+      "creditos": 3,
+      "tipo": "obligatorio",
+      "area": "OPER",
+      "prerrequisitos": []
+    },
+    {
+      "codigo": null,
+      "nombre": "Ciberseguridad",
+      "semestre": 7,
+      "creditos": 3,
+      "tipo": "obligatorio",
+      "area": "GSIN",
+      "prerrequisitos": []
+    },
+    {
+      "codigo": null,
+      "nombre": "Proyecto en Ing. de Sistemas I",
+      "semestre": 7,
+      "creditos": 2,
+      "tipo": "obligatorio",
+      "area": "INVE",
+      "prerrequisitos": []
+    },
+    {
+      "codigo": null,
+      "nombre": "Electiva Socio-Humanística I",
+      "semestre": 7,
+      "creditos": 3,
+      "tipo": "electiva",
+      "area": "ELCT",
+      "prerrequisitos": []
+    },
+    {
+      "codigo": null,
+      "nombre": "Electiva Contexto",
+      "semestre": 7,
+      "creditos": 3,
+      "tipo": "electiva",
+      "area": "ELCT",
+      "prerrequisitos": []
+    },
+    {
+      "codigo": null,
+      "nombre": "Electiva de Profundización",
+      "semestre": 7,
+      "creditos": 3,
+      "tipo": "electiva",
+      "area": "ELCT",
+      "prerrequisitos": []
+    },
+    {
+      "codigo": null,
+      "nombre": "Investigación de Operaciones II",
+      "semestre": 8,
+      "creditos": 3,
+      "tipo": "obligatorio",
+      "area": "OPER",
+      "prerrequisitos": []
+    },
+    {
+      "codigo": null,
+      "nombre": "Dinámica de Sistemas",
+      "semestre": 8,
+      "creditos": 3,
+      "tipo": "obligatorio",
+      "area": "SIST",
+      "prerrequisitos": []
+    },
+    {
+      "codigo": null,
+      "nombre": "Proyecto en Ing. de Sistemas II",
+      "semestre": 8,
+      "creditos": 4,
+      "tipo": "obligatorio",
+      "area": "INVE",
+      "prerrequisitos": []
+    },
+    {
+      "codigo": null,
+      "nombre": "Electiva Socio-Humanística II",
+      "semestre": 8,
+      "creditos": 3,
+      "tipo": "electiva",
+      "area": "ELCT",
+      "prerrequisitos": []
+    },
+    {
+      "codigo": null,
+      "nombre": "Electiva de Profundización",
+      "semestre": 8,
+      "creditos": 3,
+      "tipo": "electiva",
+      "area": "ELCT",
+      "prerrequisitos": []
+    },
+    {
+      "codigo": null,
+      "nombre": "Práctica en Ing. de Sistemas",
+      "semestre": 9,
+      "creditos": 12,
+      "tipo": "obligatorio",
+      "area": "SIST",
+      "prerrequisitos": []
+    },
+    {
+      "codigo": null,
+      "nombre": "Electiva Contexto",
+      "semestre": 9,
+      "creditos": 3,
+      "tipo": "electiva",
+      "area": "ELCT",
+      "prerrequisitos": []
+    }
+  ]
+}
