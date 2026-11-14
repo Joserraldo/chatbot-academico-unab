@@ -1,0 +1,105 @@
+# Asistente Académico UNAB — stack completo en una sola VM (EC2 t3.small/t3.medium).
+# Uso:  cp .env.example .env  (editar)  &&  docker compose up -d --build
+# RAM aproximada en reposo: postgres ~120 MB, n8n ~350 MB, mcp ~80 MB, caddy ~20 MB, scraper ~40 MB.
+
+name: chatbot-unab
+
+services:
+  postgres:
+    image: pgvector/pgvector:0.8.7-pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: unab
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d unab"]
+      interval: 10s
+      retries: 10
+    # Sin puertos publicados: solo accesible dentro de la red de docker.
+    # Para conectarte desde tu PC usa un túnel SSH:  ssh -L 5432:localhost:5432 ... (y descomenta)
+    # ports: ["127.0.0.1:5432:5432"]
+
+  n8n:
+    image: n8nio/n8n:${N8N_VERSION:-2.47.7}
+    restart: unless-stopped
+    depends_on:
+      postgres: { condition: service_healthy }
+    environment:
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_HOST: postgres
+      DB_POSTGRESDB_DATABASE: n8n
+      DB_POSTGRESDB_USER: ${POSTGRES_USER}
+      DB_POSTGRESDB_PASSWORD: ${POSTGRES_PASSWORD}
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
+      N8N_HOST: ${DOMAIN}
+      N8N_PROTOCOL: https
+      WEBHOOK_URL: https://${DOMAIN}/
+      N8N_PROXY_HOPS: 1
+      GENERIC_TIMEZONE: America/Bogota
+      TZ: America/Bogota
+      N8N_DIAGNOSTICS_ENABLED: "false"
+      N8N_RESTRICT_FILE_ACCESS_TO: /files
+      N8N_BLOCK_ENV_ACCESS_IN_NODE: "false"   # los workflows leen LLM_MODEL, EMBED_MODEL, SHEETS_CSV_URL
+      NODE_OPTIONS: --max-old-space-size=768
+      EXECUTIONS_DATA_PRUNE: "true"
+      EXECUTIONS_DATA_MAX_AGE: 168
+      # variables que usan los workflows
+      LLM_MODEL: ${LLM_MODEL}
+      EMBED_MODEL: ${EMBED_MODEL}
+      SHEETS_CSV_URL: ${SHEETS_CSV_URL:-}
+      MCP_URL: http://mcp-server:9000/mcp
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./data/docs_ccd:/files/docs_ccd:ro
+      - ./n8n:/bootstrap:ro
+    ports:
+      - "127.0.0.1:5678:5678"   # solo local; el público entra por Caddy (443)
+
+  mcp-server:
+    build: ./mcp-server
+    restart: unless-stopped
+    depends_on:
+      postgres: { condition: service_healthy }
+    environment:
+      MCP_DATABASE_URL: postgresql://chatbot_ro:${APP_DB_PASSWORD}@postgres:5432/unab
+      MCP_TOKEN: ${MCP_TOKEN}
+      LLM_BASE_URL: ${EMBED_BASE_URL}
+      LLM_API_KEY: ${EMBED_API_KEY}
+      EMBED_MODEL: ${EMBED_MODEL}
+    ports:
+      - "9000:9000"   # MCP Streamable HTTP (requisito del curso: puerto 9000 abierto en el Security Group)
+
+  scraper:
+    build: ./scraper
+    restart: unless-stopped
+    depends_on:
+      postgres: { condition: service_healthy }
+    environment:
+      SCRAPER_DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/unab
+      SCRAPE_INTERVAL_HOURS: ${SCRAPE_INTERVAL_HOURS:-6}
+
+  caddy:
+    image: caddy:2.10-alpine
+    restart: unless-stopped
+    depends_on: [n8n]
+    environment:
+      DOMAIN: ${DOMAIN}
+      ACME_EMAIL: ${ACME_EMAIL}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  pgdata:
+  n8n_data:
+  caddy_data:
+  caddy_config:

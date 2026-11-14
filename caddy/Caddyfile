@@ -1,0 +1,19 @@
+# HTTPS automático con Let's Encrypt para el dominio DuckDNS.
+# Requisitos: el dominio apunta a la Elastic IP y los puertos 80/443 están abiertos.
+{
+	email {$ACME_EMAIL}
+}
+
+{$DOMAIN} {
+	encode gzip
+
+	# MCP server también disponible por HTTPS en /mcp (además del puerto 9000)
+	handle /mcp* {
+		reverse_proxy mcp-server:9000
+	}
+
+	# n8n: editor, webhooks (/webhook/chat) y API
+	handle {
+		reverse_proxy n8n:5678
+	}
+}
