@@ -1,0 +1,14 @@
+periodo,evento,categoria,fecha_inicio,fecha_fin,detalle
+2026-2,Inicio de clases,inicio_cursos,2026-08-03,,Inicio de clases de pregrado.
+2026-2,Prueba diagnóstica de competencias digitales,diagnostica,2026-08-10,2026-08-21,"Virtual, obligatoria para primer semestre."
+2026-2,Inscripciones cursos CCD (corte 2),inscripciones,2026-09-14,2026-09-25,Inscripción en la plataforma del CCD.
+2026-2,Inicio cursos CCD (corte 2),inicio_cursos,2026-09-28,,Cursos virtuales e híbridos.
+2026-2,Exámenes finales,evaluaciones,2026-11-23,2026-12-05,Semana de evaluaciones finales.
+2027-1,Inscripción de asignaturas 2027-1,inscripciones,2026-12-01,2026-12-12,Prematrícula académica en Banner.
+2027-1,Pago de matrícula ordinaria,matricula,2026-12-01,2027-01-15,Pago sin recargo.
+2027-1,Pago de matrícula extraordinaria,matricula,2027-01-16,2027-01-29,Pago con recargo.
+2027-1,Prueba diagnóstica de competencias digitales,diagnostica,2027-02-08,2027-02-19,Estudiantes nuevos y transferencias.
+2027-1,Inicio de clases,inicio_cursos,2027-02-01,,Inicio de clases de pregrado.
+2027-1,Inscripciones cursos CCD (corte 1),inscripciones,2027-02-15,2027-02-26,Inscripción en la plataforma del CCD.
+2027-1,Inicio cursos CCD (corte 1),inicio_cursos,2027-03-01,,Cursos del Centro de Competencias Digitales.
+2027-1,Solicitud de grado,grados,2027-03-01,2027-03-31,Radicar solicitud con requisitos cumplidos.
