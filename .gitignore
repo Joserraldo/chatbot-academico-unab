@@ -1,0 +1,16 @@
+# secretos
+.env
+*.pem
+n8n/.credentials.json
+
+# python
+__pycache__/
+*.pyc
+.venv*/
+venv/
+
+# varios
+.DS_Store
+Thumbs.db
+*.log
+backup*.sql
