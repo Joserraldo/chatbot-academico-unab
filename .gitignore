@@ -14,3 +14,4 @@ venv/
 Thumbs.db
 *.log
 backup*.sql
+.claude/worktrees/
