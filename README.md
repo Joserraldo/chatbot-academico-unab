@@ -9,8 +9,12 @@ Trabajo final · Tema 2 · Ciencia de Datos · Ingeniería de Sistemas · Univer
 | | |
 |---|---|
 | **Estado** | Desplegado en EC2. Se verificaron las cuatro intenciones desde Android, la ingesta RAG y el cliente MCP. Consulta [docs/CONTINUACION.md](docs/CONTINUACION.md). |
-| **Demo** | [Editor de n8n](https://chatbotunab.duckdns.org) · [app Android](android/README.md) · estudiante demo `U00000001` |
+| **Demo** | [Chat web UNAB](https://chatbotunab.duckdns.org/app/) · [Presentación](https://chatbotunab.duckdns.org/app/presentacion/) · [Editor de n8n](https://chatbotunab.duckdns.org) · [app Android](android/README.md) · estudiante demo `U00000001` (cualquier código de `U00000001` a `U00000200`) |
 | **Equipo** | José Téllez (código, datos, workflows, docs) · Santiago Cabezas (infraestructura AWS, despliegue, evidencias) |
+
+**Datos de prueba cargados:** 200 estudiantes sintéticos (`U00000001`–`U00000200`), 48 cursos del plan, 30 prerrequisitos ilustrativos, 6.168 registros de historial y 927 matrículas. Los guardrails solo permiten consultar el código con el que se inicia sesión.
+
+**Interfaces:** la web y la app usan la identidad visual de la UNAB (naranja `#FF9D00`, morado `#8600DD`, logo y favicon oficiales de unab.edu.co) y el mismo contrato `POST /webhook/chat`.
 
 ---
 
@@ -71,6 +75,7 @@ Detalle de cada componente, decisiones y flujo de una pregunta: **[docs/ARQUITEC
 
 ```
 ├── android/                 App Android (Kotlin, Jetpack Compose)        → android/README.md
+├── web/                     Chat web con identidad UNAB (/app/) y presentación (/app/presentacion/)
 ├── caddy/Caddyfile          Reverse proxy + HTTPS automático
 ├── data/
 │   ├── plan_estudios_ing_sistemas.json   Plan real extraído del PDF (48 cursos, 151 créditos, 9 semestres)
@@ -178,7 +183,7 @@ Si cambias `03_seed.sql` con la BD ya creada, hay que recrear el volumen: `docke
 | RAG | 20 % | workflows `05` y `01`, `data/docs_ccd/`, herramienta MCP `buscar_documentos` |
 | Workflows n8n | 20 % | `n8n/workflows/` (router + 5) |
 | Base de datos | 10 % | `db/init/`, [docs/MODELO-DATOS.md](docs/MODELO-DATOS.md) |
-| App móvil | 20 % | `android/` |
-| Documentación | 10 % | `README.md`, `docs/`, `BITACORA.md`, `docs/evidencias/` |
+| App móvil | 20 % | `android/` (app) y `web/` (versión web responsive) |
+| Documentación | 10 % | `README.md`, `docs/`, `BITACORA.md`, `docs/evidencias/`, [presentación](docs/presentacion/index.html) |
 
 El [registro de evidencias](docs/evidencias/README.md) enlaza las pruebas del despliegue y la app.
