@@ -16,3 +16,4 @@ Thumbs.db
 backup*.sql
 .claude/worktrees/
 CLAUDE.local.md
+.playwright-mcp/
