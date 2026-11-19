@@ -49,6 +49,15 @@ Registro cronológico de decisiones, avances y problemas. Formato: fecha · resp
 
 ---
 
+## 2026-11-19 · Santiago — Frontend UNAB, auditoría de requisitos y corrección del RAG
+
+- Interfaz web de chat en `/app/` (Caddy) y rediseño de la app Android con identidad UNAB (naranja `#FF9D00`, morado `#8600DD`, logo y favicon oficiales). Trabajo mecánico delegado a DeepSeek y revisado por Claude.
+- Auditoría contra las diapositivas del profesor con las preguntas reales del enunciado: ruta y cursos, RAG, calendario, historial, noticias y guardrails responden. Latencias de 6 a 51 s (104 s en frío).
+- **Problema:** insignia y recomendaciones respondían «no encontré información». Causa: n8n llamaba a `/v1/embeddings` con una clave desactualizada (401). **Solución:** `bash scripts/n8n-import.sh` para refrescar credenciales; el RAG vuelve a citar los documentos.
+- Pendiente de cuentas externas: Google Sheet publicado para el calendario, capturas de AWS Academy y compilación de la app en Android Studio.
+
+---
+
 <!-- Plantilla para nuevas entradas
 ## AAAA-MM-DD · Nombre — Título
 **Hecho**
