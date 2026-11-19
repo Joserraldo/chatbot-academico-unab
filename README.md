@@ -18,6 +18,32 @@ Trabajo final · Tema 2 · Ciencia de Datos · Ingeniería de Sistemas · Univer
 
 ---
 
+## Capturas
+
+**App Android** (estudiante demo `U00000001`, datos sintéticos)
+
+| Inicio | Consulta general (RAG) | Calendario |
+|:---:|:---:|:---:|
+| <img src="docs/evidencias/20-app-inicio.png" width="220"> | <img src="docs/evidencias/20-app-general.png" width="220"> | <img src="docs/evidencias/20-app-calendario.png" width="220"> |
+
+| Historial personalizado | Noticias | Guardrail (bloqueo) |
+|:---:|:---:|:---:|
+| <img src="docs/evidencias/20-app-historial.png" width="220"> | <img src="docs/evidencias/20-app-noticias.png" width="220"> | <img src="docs/evidencias/20-app-bloqueado.png" width="220"> |
+
+**Web con identidad UNAB** — <https://chatbotunab.duckdns.org/app/>
+
+<img src="docs/evidencias/22-web-login.png" width="640">
+
+**Presentación** — <https://chatbotunab.duckdns.org/app/presentacion/>
+
+| Arquitectura | Conclusiones |
+|:---:|:---:|
+| <img src="docs/evidencias/23-presentacion-arquitectura.png" width="400"> | <img src="docs/evidencias/24-presentacion-conclusiones.png" width="400"> |
+
+Más pruebas y el registro de verificación de la EC2: [docs/evidencias/](docs/evidencias/README.md).
+
+---
+
 ## 1. ¿Qué responde el chatbot?
 
 | Alcance (diapositiva 9) | Cómo se resuelve | Workflow |

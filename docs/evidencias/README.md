@@ -24,3 +24,5 @@ El video narrado de la demo está en `android/app/build/outputs/demo-unab.mp4` e
 | 19 | `19-chat-log-guardrails.png` | `chat_log` con casos bloqueados | Verificado por SQL |
 | 20 | `20-app-*.png` | App: inicio, chat y error/reintentar | [Inicio](20-app-inicio.png) · [General](20-app-general.png) · [Calendario](20-app-calendario.png) · [Historial](20-app-historial.png) · [Noticias](20-app-noticias.png) · [Bloqueo](20-app-bloqueado.png) · [Error](20-app-error.png) |
 | 21 | `21-cliente-mcp-claude.png` | Claude usando una herramienta del MCP | Verificado en Claude Code CLI |
+| 22 | `22-web-login.png` | Chat web UNAB en `/app/` con logo oficial | [Web](22-web-login.png) |
+| 23-24 | `23-…`, `24-…` | Presentación publicada en `/app/presentacion/` | [Arquitectura](23-presentacion-arquitectura.png) · [Conclusiones](24-presentacion-conclusiones.png) |
