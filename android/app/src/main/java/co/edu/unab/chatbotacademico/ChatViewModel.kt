@@ -28,6 +28,7 @@ data class UiState(
     val loaded: Boolean = false,
     val codigo: String? = null,
     val baseUrl: String = BuildConfig.BASE_URL,
+    val apiKey: String = BuildConfig.CHATBOT_KEY,
     val messages: List<Msg> = emptyList(),
     val typing: Boolean = false,
     /** Mensaje de error amable; si no es null se muestra con botón Reintentar. */
@@ -38,7 +39,7 @@ val CODIGO_REGEX = Regex("^U\\d{8}$")
 
 class ChatViewModel(app: Application) : AndroidViewModel(app) {
     private val prefs = Prefs(app)
-    private val api = ChatApi(BuildConfig.CHATBOT_KEY)
+    private val api = ChatApi()
 
     private val _state = MutableStateFlow(UiState())
     val state: StateFlow<UiState> = _state.asStateFlow()
@@ -56,25 +57,26 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
                     loaded = true,
                     codigo = s.codigo?.takeIf { c -> CODIGO_REGEX.matches(c) },
                     baseUrl = s.baseUrl?.takeIf { u -> u.isNotBlank() } ?: BuildConfig.BASE_URL,
+                    apiKey = s.apiKey ?: BuildConfig.CHATBOT_KEY,
                 )
             }
         }
     }
 
-    fun login(codigo: String, baseUrl: String) {
+    fun login(codigo: String, baseUrl: String, apiKey: String) {
         val c = codigo.trim().uppercase()
         val u = baseUrl.trim().ifBlank { BuildConfig.BASE_URL }
         if (!CODIGO_REGEX.matches(c)) return
         viewModelScope.launch {
             val previous = _state.value.codigo
-            prefs.saveLogin(c, u)
+            prefs.saveLogin(c, u, apiKey.trim())
             // Una sesión por instalación + estudiante; se reutiliza si ya existía.
             val existing = prefs.load().sessionId
             sessionId = existing ?: UUID.randomUUID().toString().also { prefs.saveSession(c, it) }
             lastUserText = null
             _state.update {
                 it.copy(
-                    codigo = c, baseUrl = u,
+                    codigo = c, baseUrl = u, apiKey = apiKey.trim(),
                     messages = if (previous == c) it.messages else emptyList(),
                     error = null, typing = false,
                 )
@@ -118,7 +120,7 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
         _state.update { it.copy(typing = true) }
         viewModelScope.launch {
             try {
-                val r = api.send(st.baseUrl, ChatRequest(sessionId, codigo, text))
+                val r = api.send(st.baseUrl, st.apiKey, ChatRequest(sessionId, codigo, text))
                 lastUserText = null
                 _state.update {
                     it.copy(

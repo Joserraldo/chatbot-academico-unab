@@ -8,8 +8,8 @@ Trabajo final · Tema 2 · Ciencia de Datos · Ingeniería de Sistemas · Univer
 
 | | |
 |---|---|
-| **Estado** | Código completo y probado en local (BD, MCP, scraper, app). Falta el despliegue en AWS: ver [docs/CONTINUACION.md](docs/CONTINUACION.md) |
-| **Demo** | `https://<subdominio>.duckdns.org` (cuando esté desplegado) · estudiante demo `U00000001` |
+| **Estado** | Desplegado en EC2. Se verificaron las cuatro intenciones desde Android, la ingesta RAG y el cliente MCP. Consulta [docs/CONTINUACION.md](docs/CONTINUACION.md). |
+| **Demo** | [Editor de n8n](https://chatbotunab.duckdns.org) · [app Android](android/README.md) · estudiante demo `U00000001` |
 | **Equipo** | José Téllez (código, datos, workflows, docs) · Santiago Cabezas (infraestructura AWS, despliegue, evidencias) |
 
 ---
@@ -20,7 +20,7 @@ Trabajo final · Tema 2 · Ciencia de Datos · Ingeniería de Sistemas · Univer
 |---|---|---|
 | Ruta y cursos: ¿qué cursos debo tomar? ¿qué es la insignia? | RAG sobre documentos + herramienta `cursos_pendientes` | 01 / 03 |
 | RAG institucional (documentos del CCD) | Embeddings en PostgreSQL + pgvector | 05 → 01 |
-| Calendario académico | Google Sheets (CSV publicado) | 02 |
+| Calendario académico | CSV de Google Sheets configurable; respaldo activo en PostgreSQL | 02 |
 | Historial personalizado: ¿qué cursos de competencias digitales he tomado? | BD sintética vía servidor MCP | 03 |
 | Noticias y novedades | Scraping periódico del RSS de la UNAB | 04 |
 | Matrícula, avance, proyección, alertas, recomendaciones (objetivo) | Vistas analíticas + herramientas MCP | 03 |
@@ -49,7 +49,9 @@ flowchart LR
   W4 --> P
   S -- RSS unab.edu.co --> P
   W2 -- CSV --> G[Google Sheets]
-  N -- API OpenAI-compatible --> L[LLM b.ai<br/>qwen-flash + embeddings]
+  N -- chat compatible con OpenAI --> L[B.AI · qwen3.8-flash]
+  W1 -- embeddings --> M
+  I -- embeddings --> M
   K[Claude / OpenAI<br/>clientes MCP] -- Bearer --> M
 ```
 
@@ -114,12 +116,12 @@ docker compose up -d --build
 bash scripts/n8n-import.sh
 ```
 
-Después, en `https://<DOMAIN>`: crear el usuario owner de n8n, ejecutar **05 Ingesta RAG** y activar **00 Router** y **04 Noticias**. Verificar con `bash scripts/smoke-test.sh`.
+En un despliegue nuevo, crea el usuario propietario en `https://<DOMAIN>` antes de importar. El script publica el router y sus cuatro sub-workflows. Ejecuta **05 Ingesta RAG** en el editor o por CLI y verifica con `bash scripts/smoke-test.sh`.
 
 Guía paso a paso con AWS Academy, Security Group, Elastic IP, DuckDNS y la lista de capturas de evidencia: **[docs/DESPLIEGUE-AWS.md](docs/DESPLIEGUE-AWS.md)**.
 
 ### ¿Alcanza una máquina de AWS Academy?
-Sí. El modelo de lenguaje **no corre en la VM**: se consume por API (b.ai / qwen-flash), así que no hace falta GPU ni una instancia grande. La VM solo corre n8n, Postgres, el MCP server, el scraper y Caddy (~650 MB en reposo). Ver la tabla de tamaños en [docs/DESPLIEGUE-AWS.md](docs/DESPLIEGUE-AWS.md#1-tamaño-de-instancia).
+El chat usa `qwen3.8-flash` por API de B.AI. La VM ejecuta el modelo multilingüe de embeddings en CPU y guarda sus pesos en un volumen de Docker. La demo se verificó en una `t2.large` de 8 GB. Consulta [docs/DESPLIEGUE-AWS.md](docs/DESPLIEGUE-AWS.md#1-tamaño-de-instancia).
 
 ## 5. API del chat (contrato con la app)
 
@@ -137,7 +139,7 @@ Content-Type: application/json
 
 ## 6. Servidor MCP
 
-`mcp-server/server.py` (FastMCP, transporte Streamable HTTP, `http://<DOMAIN>:9000/mcp`, header `Authorization: Bearer <MCP_TOKEN>`). Usa el rol de BD `chatbot_ro` (solo lectura).
+`mcp-server/server.py` usa FastMCP con transporte Streamable HTTP en `https://<DOMAIN>/mcp` y el header `Authorization: Bearer <MCP_TOKEN>`. Las herramientas consultan la BD con el rol `chatbot_ro`.
 
 | Herramienta | Qué devuelve |
 |---|---|
@@ -179,4 +181,4 @@ Si cambias `03_seed.sql` con la BD ya creada, hay que recrear el volumen: `docke
 | App móvil | 20 % | `android/` |
 | Documentación | 10 % | `README.md`, `docs/`, `BITACORA.md`, `docs/evidencias/` |
 
-Pendientes de entrega: video demostración y capturas del despliegue (responsable: Santiago, ver [docs/CONTINUACION.md](docs/CONTINUACION.md)).
+El [registro de evidencias](docs/evidencias/README.md) enlaza las pruebas del despliegue y la app.

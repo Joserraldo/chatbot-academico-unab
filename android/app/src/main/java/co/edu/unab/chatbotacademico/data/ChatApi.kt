@@ -23,7 +23,7 @@ data class ChatResponse(
 
 class ChatApiException(message: String) : Exception(message)
 
-class ChatApi(private val apiKey: String) {
+class ChatApi {
     private val json = Json { ignoreUnknownKeys = true; explicitNulls = false; encodeDefaults = true }
 
     private val client = OkHttpClient.Builder()
@@ -33,7 +33,7 @@ class ChatApi(private val apiKey: String) {
         .callTimeout(0, TimeUnit.SECONDS)
         .build()
 
-    suspend fun send(baseUrl: String, req: ChatRequest): ChatResponse = withContext(Dispatchers.IO) {
+    suspend fun send(baseUrl: String, apiKey: String, req: ChatRequest): ChatResponse = withContext(Dispatchers.IO) {
         val url = baseUrl.trim().trimEnd('/') + "/webhook/chat"
         val body = json.encodeToString(req).toRequestBody("application/json".toMediaType())
         val request = try {

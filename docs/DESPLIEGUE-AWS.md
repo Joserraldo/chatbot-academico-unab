@@ -4,13 +4,13 @@ Guía para replicar el despliegue desde cero. Cada paso marcado con 📸 requier
 
 ## 1. Tamaño de instancia
 
-El LLM corre en el proveedor (b.ai), no en la VM. La VM solo necesita RAM para n8n + Postgres.
+El chat corre en B.AI. La VM ejecuta n8n, Postgres y los embeddings multilingües en CPU. La demo se verificó en una `t2.large` de 8 GB, en `us-east-1`.
 
 | Tipo | vCPU / RAM | ¿Sirve? |
 |---|---|---|
 | t3.micro / t2.micro | 2 / 1 GB | ❌ n8n se queda sin memoria |
-| **t3.small** | 2 / 2 GB | ✅ con el swap de 2 GB que crea `bootstrap-ec2.sh` |
-| **t3.medium** | 2 / 4 GB | ✅ recomendado si el lab lo permite (más holgura para compilar las imágenes) |
+| **t3.small** | 2 / 2 GB | Requiere verificar el pico de memoria en la ingesta, incluso con swap |
+| **t3.medium** | 2 / 4 GB | Punto de partida, con más margen para el modelo y las imágenes |
 
 Disco: 25-30 GB gp3 (las imágenes de Docker ocupan ~3 GB). Sistema: **Ubuntu Server 24.04 LTS**.
 
@@ -66,7 +66,7 @@ Salir (`exit`) y volver a entrar por SSH (para que el grupo `docker` aplique).
 ```bash
 cd chatbot-academico-unab && cp .env.example .env
 ```
-Generar secretos (correr 5 veces y pegar en `POSTGRES_PASSWORD`, `APP_DB_PASSWORD`, `N8N_ENCRYPTION_KEY`, `MCP_TOKEN`, `CHATBOT_KEY`):
+Generar seis secretos independientes para `POSTGRES_PASSWORD`, `APP_DB_PASSWORD`, `N8N_ENCRYPTION_KEY`, `MCP_TOKEN`, `CHATBOT_KEY` y `EMBED_API_KEY`:
 ```bash
 openssl rand -hex 24
 ```
@@ -97,15 +97,18 @@ docker compose ps
 ```bash
 bash scripts/n8n-import.sh
 ```
-3. En la UI: abrir **05 Ingesta RAG** → *Execute workflow*. 📸 `08-ingesta-rag.png`
-4. Activar (publicar) **00 Router chat (webhook)** y **04 Noticias y nuevos cursos**. 📸 `09-workflows-activos.png`
+3. En la UI, abrir **05 Ingesta RAG** → *Execute workflow*. Para ejecutarla por CLI junto con el servidor n8n activo, usa un puerto de runner distinto. 📸 `08-ingesta-rag.png`
+   ```bash
+   docker compose exec -T -e N8N_RUNNERS_BROKER_PORT=5680 n8n n8n execute --id=wf05IngestaRAG00
+   ```
+4. Confirmar que el script publicó el router y los cuatro sub-workflows. 📸 `09-workflows-activos.png`
 5. Abrir cada workflow y tomar captura del lienzo. 📸 `10-wf00-router.png` … `15-wf05-ingesta.png`
 
 Si un nodo aparece con advertencia (versión de nodo distinta en n8n), abrirlo, revisar que la credencial esté seleccionada y guardar. Si se modifica un workflow en la UI, exportarlo y actualizar `n8n/build_workflows.py` (o reemplazar el JSON) para que el repo siga siendo replicable.
 
 ## 9. Google Sheets (calendario)
 
-1. Crear un Google Sheet e importar `data/calendario_academico.csv` (Archivo → Importar). 📸 `16-google-sheet.png`
+1. Crear un Google Sheet e importar `data/calendario_academico.csv` (Archivo → Importar). Conserva las fechas como texto `AAAA-MM-DD` al importar. 📸 `16-google-sheet.png`
 2. Archivo → Compartir → **Publicar en la web** → hoja 1 → formato **CSV** → copiar URL.
 3. Ponerla en `SHEETS_CSV_URL` del `.env` y aplicar: `docker compose up -d n8n`.
 
@@ -142,7 +145,7 @@ docker compose exec postgres psql -U unab_admin -d unab -c "select creado_en, in
 |---|---|
 | Caddy no obtiene certificado | DuckDNS no apunta a la Elastic IP o el puerto 80 está cerrado |
 | n8n se reinicia solo | Falta de RAM: confirmar swap con `free -h`; usar t3.medium |
-| `401` en el webhook | Header `X-Chatbot-Key` distinto a `CHATBOT_KEY` |
+| `403` en el webhook | Falta un `X-Chatbot-Key` válido |
 | El agente 03 no ve herramientas | `MCP_TOKEN` distinto en `.env` y en la credencial; reimportar credenciales |
-| Error de embeddings / dimensión | Se cambió `EMBED_MODEL`: volver a ejecutar 05 Ingesta (borra y recrea la tabla) |
+| Error de embeddings / dimensión | Después de cambiar `EMBED_MODEL`, volver a ejecutar 05 Ingesta para publicar los vectores del modelo nuevo |
 | Los cambios en `03_seed.sql` no aparecen | Los scripts de `db/init` solo corren con el volumen vacío: `docker compose down -v` |

@@ -71,7 +71,8 @@ class W:
 def chat_model(w: W, name, pos, temperature=0.2):
     return w.node(name, "@n8n/n8n-nodes-langchain.lmChatOpenAi", 1.2,
                   {"model": {"__rl": True, "value": LLM_MODEL, "mode": "id"},
-                   "options": {"temperature": temperature, "maxTokens": 900, "timeout": 60000}},
+                   "options": {"temperature": temperature, "maxTokens": 900, "timeout": 60000,
+                               "extraBody": "={{ ($env.LLM_MODEL || '').startsWith('qwen') ? '{\"enable_thinking\":false}' : '{}' }}"}},
                   pos, CRED["llm"])
 
 
@@ -84,7 +85,7 @@ def memory(w: W, name, pos):
 
 def embeddings(w: W, name, pos):
     return w.node(name, "@n8n/n8n-nodes-langchain.embeddingsOpenAi", 1.2,
-                  {"model": "={{ $env.EMBED_MODEL }}", "options": {}}, pos, CRED["embed"])
+                  {"model": "={{ $env.EMBED_MODEL }}", "options": {"encodingFormat": "float"}}, pos, CRED["embed"])
 
 
 def sub_trigger(w: W):
@@ -278,7 +279,10 @@ def calendario():
                 "Responde con las fechas exactas del calendario; indica si el evento ya pasó o cuántos días faltan."}, (660, 300))
     chat_model(w, "LLM", (680, 520))
     w.link("LLM", "Responder fechas", "ai_languageModel")
-    salida(w, "$json.text", ["Calendario académico (Google Sheets)"], (900, 300), "calendario")
+    w.node("Salida", "n8n-nodes-base.code", 2, {"jsCode":
+           "const origen = $env.SHEETS_CSV_URL ? 'Google Sheets' : 'PostgreSQL';\n"
+           "return [{ json: { respuesta: String($json.text ?? '').trim(), "
+           "fuentes: [`Calendario académico (${origen})`], intencion: 'calendario' } }];"}, (900, 300))
     for a, b in [("Inicio", "Leer Google Sheet (CSV)"), ("Leer Google Sheet (CSV)", "Preparar eventos"),
                  ("Preparar eventos", "Responder fechas"), ("Responder fechas", "Salida")]:
         w.link(a, b)
@@ -386,18 +390,25 @@ def ingesta():
     w = W("ingesta", "05 Ingesta RAG (chunking + embeddings)", ["unab", "rag"])
     w.note("## 05 Ingesta y embeddings\nEjecutar manualmente cada vez que cambien los documentos de `data/docs_ccd/`.\n"
            "Lee los .md → extrae texto → **chunking** (800/120) → **embeddings** → PGVector (`rag_documentos`).\n"
-           "Primero borra la tabla para no duplicar fragmentos.", (-60, 20), 520)
+           "Publica el nuevo índice solo después de insertar los fragmentos.", (-60, 20), 520)
     w.node("Ejecutar ingesta", "n8n-nodes-base.manualTrigger", 1, {}, (0, 300))
-    w.node("Limpiar tabla", "n8n-nodes-base.postgres", 2.5,
-           {"operation": "executeQuery", "query": "DROP TABLE IF EXISTS public.rag_documentos;", "options": {}},
-           (200, 300), CRED["postgres"], alwaysOutputData=True)
     w.node("Leer documentos", "n8n-nodes-base.readWriteFile", 1,
            {"operation": "read", "fileSelector": "/files/docs_ccd/*.md", "options": {}}, (400, 300),
            executeOnce=False)
     w.node("Extraer texto", "n8n-nodes-base.extractFromFile", 1, {"operation": "text", "options": {}}, (600, 300))
     w.node("Preparar", "n8n-nodes-base.code", 2, {"jsCode": PREP_DOCS}, (800, 300))
     w.node("PGVector insertar", "@n8n/n8n-nodes-langchain.vectorStorePGVector", 1.1,
-           {"mode": "insert", "tableName": "rag_documentos", "options": {}}, (1020, 300), CRED["postgres"])
+           {"mode": "insert", "tableName": "=rag_ingesta_{{ $execution.id }}", "options": {}},
+           (1020, 300), CRED["postgres"], executeOnce=False)
+    w.node("Publicar índice", "n8n-nodes-base.postgres", 2.5, {"operation": "executeQuery",
+           "query": "=DO $$ BEGIN\n"
+                    "PERFORM pg_advisory_xact_lock(118062);\n"
+                    "IF NOT EXISTS (SELECT 1 FROM public.rag_ingesta_{{ $execution.id }}) THEN\n"
+                    "  RAISE EXCEPTION 'La ingesta no produjo fragmentos';\n"
+                    "END IF;\n"
+                    "DROP TABLE IF EXISTS public.rag_documentos;\n"
+                    "ALTER TABLE public.rag_ingesta_{{ $execution.id }} RENAME TO rag_documentos;\n"
+                    "END $$;", "options": {}}, (1270, 300), CRED["postgres"], executeOnce=True)
     embeddings(w, "Embeddings", (960, 520))
     w.node("Cargador", "@n8n/n8n-nodes-langchain.documentDefaultDataLoader", 1, {
         "jsonMode": "expressionData", "jsonData": "={{ $json.text }}",
@@ -405,9 +416,9 @@ def ingesta():
         (1120, 520))
     w.node("Chunking", "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter", 1,
            {"chunkSize": 800, "chunkOverlap": 120, "options": {}}, (1140, 720))
-    for a, b in [("Ejecutar ingesta", "Limpiar tabla"), ("Limpiar tabla", "Leer documentos"),
+    for a, b in [("Ejecutar ingesta", "Leer documentos"),
                  ("Leer documentos", "Extraer texto"), ("Extraer texto", "Preparar"),
-                 ("Preparar", "PGVector insertar")]:
+                 ("Preparar", "PGVector insertar"), ("PGVector insertar", "Publicar índice")]:
         w.link(a, b)
     w.link("Embeddings", "PGVector insertar", "ai_embedding")
     w.link("Cargador", "PGVector insertar", "ai_document")

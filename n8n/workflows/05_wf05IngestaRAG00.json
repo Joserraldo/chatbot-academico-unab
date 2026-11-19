@@ -13,7 +13,7 @@
         20
       ],
       "parameters": {
-        "content": "## 05 Ingesta y embeddings\nEjecutar manualmente cada vez que cambien los documentos de `data/docs_ccd/`.\nLee los .md → extrae texto → **chunking** (800/120) → **embeddings** → PGVector (`rag_documentos`).\nPrimero borra la tabla para no duplicar fragmentos.",
+        "content": "## 05 Ingesta y embeddings\nEjecutar manualmente cada vez que cambien los documentos de `data/docs_ccd/`.\nLee los .md → extrae texto → **chunking** (800/120) → **embeddings** → PGVector (`rag_documentos`).\nPublica el nuevo índice solo después de insertar los fragmentos.",
         "width": 520,
         "height": 200
       }
@@ -28,28 +28,6 @@
         300
       ],
       "parameters": {}
-    },
-    {
-      "id": "1a4ff51c-cdbb-5a0f-bbfb-8003ab24af37",
-      "name": "Limpiar tabla",
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.5,
-      "position": [
-        200,
-        300
-      ],
-      "parameters": {
-        "operation": "executeQuery",
-        "query": "DROP TABLE IF EXISTS public.rag_documentos;",
-        "options": {}
-      },
-      "credentials": {
-        "postgres": {
-          "id": "credPgUnab000001",
-          "name": "Postgres UNAB"
-        }
-      },
-      "alwaysOutputData": true
     },
     {
       "id": "76400e83-bc5a-5744-87ad-cffde1212838",
@@ -105,7 +83,7 @@
       ],
       "parameters": {
         "mode": "insert",
-        "tableName": "rag_documentos",
+        "tableName": "=rag_ingesta_{{ $execution.id }}",
         "options": {}
       },
       "credentials": {
@@ -113,7 +91,30 @@
           "id": "credPgUnab000001",
           "name": "Postgres UNAB"
         }
-      }
+      },
+      "executeOnce": false
+    },
+    {
+      "id": "264988d3-d75a-5894-9803-c3a571e840c1",
+      "name": "Publicar índice",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1270,
+        300
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=DO $$ BEGIN\nPERFORM pg_advisory_xact_lock(118062);\nIF NOT EXISTS (SELECT 1 FROM public.rag_ingesta_{{ $execution.id }}) THEN\n  RAISE EXCEPTION 'La ingesta no produjo fragmentos';\nEND IF;\nDROP TABLE IF EXISTS public.rag_documentos;\nALTER TABLE public.rag_ingesta_{{ $execution.id }} RENAME TO rag_documentos;\nEND $$;",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": {
+          "id": "credPgUnab000001",
+          "name": "Postgres UNAB"
+        }
+      },
+      "executeOnce": true
     },
     {
       "id": "311be8fd-f3a7-5de2-992a-e9159ee71c1b",
@@ -126,7 +127,9 @@
       ],
       "parameters": {
         "model": "={{ $env.EMBED_MODEL }}",
-        "options": {}
+        "options": {
+          "encodingFormat": "float"
+        }
       },
       "credentials": {
         "openAiApi": {
@@ -180,17 +183,6 @@
       "main": [
         [
           {
-            "node": "Limpiar tabla",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Limpiar tabla": {
-      "main": [
-        [
-          {
             "node": "Leer documentos",
             "type": "main",
             "index": 0
@@ -225,6 +217,17 @@
         [
           {
             "node": "PGVector insertar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PGVector insertar": {
+      "main": [
+        [
+          {
+            "node": "Publicar índice",
             "type": "main",
             "index": 0
           }

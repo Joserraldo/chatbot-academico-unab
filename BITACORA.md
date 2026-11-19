@@ -38,6 +38,17 @@ Registro cronológico de decisiones, avances y problemas. Formato: fecha · resp
 
 ---
 
+## 2026-11-18 · Equipo UNAB con Codex — Despliegue y verificación
+
+- Se confirmó en la EC2 la cuenta existente de n8n y los cinco contenedores. Se importaron seis workflows y se publicaron el router y los cuatro sub-workflows.
+- Se configuró B.AI en `https://api.b.ai/v1` con `qwen3.8-flash`. La API rechazó la ruta de embeddings, por lo que se habilitó un modelo multilingüe en CPU y se publicaron 20 fragmentos en pgvector.
+- Se verificaron las cuatro intenciones, dos bloqueos, la memoria de agentes y una consulta MCP por HTTPS desde Claude Code. El calendario funcionó con el respaldo de PostgreSQL.
+- Se agregó a la app la entrada enmascarada de la clave del webhook para distribuir el APK de depuración sin incrustar una llave.
+- Una consulta móvil de historial superó los 90 segundos. Se desactivó el razonamiento extendido de Qwen en los nodos de chat, se volvió a pasar el smoke test y el emulador recibió la respuesta de historial.
+- Las pruebas y pendientes de acceso a consolas están en [evidencias](docs/evidencias/README.md).
+
+---
+
 <!-- Plantilla para nuevas entradas
 ## AAAA-MM-DD · Nombre — Título
 **Hecho**

@@ -9,7 +9,7 @@ Todo corre en **una sola VM** (EC2) con Docker Compose. El único servicio exter
 | `caddy` | `caddy:2.10-alpine` | 80, 443 (públicos) | TLS automático (Let's Encrypt) para el dominio DuckDNS; enruta `/mcp` al MCP y el resto a n8n |
 | `n8n` | `n8nio/n8n:2.47.7` | 5678 (solo localhost) | Orquestación: webhook del chat, guardrails, ruteo, agentes, RAG, ingesta, scraping |
 | `postgres` | `pgvector/pgvector:0.8.7-pg16` | interno | BD académica sintética (`academico`), vectores (`public.rag_documentos`), memoria del chat, BD interna de n8n |
-| `mcp-server` | `mcp-server/` (Python, FastMCP) | 9000 (público, con token) | Herramientas relacionales de solo lectura para agentes (n8n, Claude, OpenAI) |
+| `mcp-server` | `mcp-server/` (Python, FastMCP) | 9000 (MCP por HTTPS en `/mcp`) | Herramientas relacionales y servicio de embeddings multilingües en CPU con credencial aparte |
 | `scraper` | `scraper/` (Python) | — | Cada 6 h lee el RSS de unab.edu.co y hace upsert en `academico.noticia` |
 
 > Las diapositivas mencionan **Supabase**. El esquema es 100 % compatible: para usar Supabase en vez del Postgres local se ejecutan `01_schema.sql`, `02_views.sql` y `03_seed.sql` en el SQL Editor de Supabase (con la extensión `vector` activada y el rol `chatbot_ro` creado a mano) y se cambian los hosts en `.env`/credenciales. Se eligió Postgres local por defecto porque no depende de cuentas externas, no tiene límites de pausa del plan gratuito y es más fácil de replicar.
@@ -33,7 +33,7 @@ sequenceDiagram
     R->>Sub: Execute Workflow (según intención)
     Sub->>DB: memoria del chat (sessionId)
     opt 01 General
-      Sub->>LLM: embedding de la pregunta
+      Sub->>MCP: embedding de la pregunta
       Sub->>DB: top-4 fragmentos (pgvector, coseno)
     end
     opt 03 Historial
@@ -54,10 +54,10 @@ sequenceDiagram
 |---|---|---|---|
 | `wfRouterChatUNAB` | 00 Router chat | Webhook POST `/webhook/chat` | Guardrail entrada → IF → Text Classifier → Execute Workflow → Guardrail salida → Log → Respond |
 | `wf01GeneralRAG00` | 01 Consulta general | Execute Workflow | AI Agent + memoria + herramienta PGVector (retrieve-as-tool) |
-| `wf02Calendario00` | 02 Calendario | Execute Workflow | HTTP (Google Sheet CSV) → Code → LLM Chain |
+| `wf02Calendario00` | 02 Calendario | Execute Workflow | HTTP (Google Sheet CSV o PostgreSQL) → Code → LLM Chain |
 | `wf03CursosMCP000` | 03 Cursos realizados | Execute Workflow | AI Agent + memoria + MCP Client Tool |
 | `wf04Noticias0000` | 04 Noticias | Schedule 6 h **y** Execute Workflow | A: RSS → clasificar → upsert · B: SELECT → LLM Chain |
-| `wf05IngestaRAG00` | 05 Ingesta RAG | Manual | DROP → leer .md → extraer → chunking → embeddings → PGVector |
+| `wf05IngestaRAG00` | 05 Ingesta RAG | Manual | Leer .md → chunking → embeddings → PGVector → publicar índice en una transacción |
 
 Los JSON se generan con `n8n/build_workflows.py` (IDs fijos para que el router encuentre los sub-workflows al importar). Las credenciales también tienen IDs fijos y se crean desde `.env` con `scripts/render_n8n_credentials.py`.
 
@@ -80,4 +80,4 @@ Los JSON se generan con `n8n/build_workflows.py` (IDs fijos para que el router e
 - Webhook protegido con header `X-Chatbot-Key`; MCP protegido con bearer token.
 - `.env` y las credenciales renderizadas nunca se versionan; `N8N_ENCRYPTION_KEY` cifra las credenciales en la BD de n8n.
 - El MCP usa el rol `chatbot_ro` (SELECT en `academico`, INSERT solo en `chat_log`).
-- Limitación conocida: la `CHATBOT_KEY` va embebida en el APK (aceptable para un prototipo académico; en producción se usaría login institucional/OAuth y un token por estudiante).
+- La app demo guarda la clave ingresada en su almacenamiento privado. La clave es compartida y el código de estudiante es un selector de datos sintéticos. Una integración con registros reales requiere autenticación institucional y autorización por estudiante.

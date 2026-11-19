@@ -71,6 +71,9 @@ services:
       LLM_BASE_URL: ${EMBED_BASE_URL}
       LLM_API_KEY: ${EMBED_API_KEY}
       EMBED_MODEL: ${EMBED_MODEL}
+      FASTEMBED_CACHE_PATH: /models
+    volumes:
+      - embedding_models:/models
     ports:
       - "9000:9000"   # MCP Streamable HTTP (requisito del curso: puerto 9000 abierto en el Security Group)
 
@@ -103,3 +106,4 @@ volumes:
   n8n_data:
   caddy_data:
   caddy_config:
+  embedding_models:

@@ -1,45 +1,57 @@
-# Proveedor de LLM (b.ai / qwen-flash) — cómo "dropear" las APIs
+# B.AI para chat y embeddings multilingües en la EC2
 
-Todo el sistema habla con el LLM por la **API compatible con OpenAI** (`POST {BASE_URL}/chat/completions` y `POST {BASE_URL}/embeddings`). No hay código atado a un proveedor: cambiar de b.ai a OpenAI, DashScope (Qwen), Groq u OpenRouter es solo cambiar `.env`.
+## Configurar o rotar la llave de B.AI
 
-## 1. Dónde van las llaves
+En la EC2, desde el directorio del proyecto, abre el archivo de configuración.
 
-Solo en el archivo `.env` de la VM (y en tu `.env` local si pruebas en tu PC). **Nunca** en el código, en un commit, en un issue ni pegadas en un chat. Si una llave se filtra, se rota en el panel del proveedor.
-
-```
-LLM_BASE_URL=https://<endpoint>/v1      # termina en /v1 (sin /chat/completions)
-LLM_API_KEY=...
-LLM_MODEL=qwen-flash                    # nombre exacto del modelo en el proveedor
-EMBED_BASE_URL=https://<endpoint>/v1
-EMBED_API_KEY=...
-EMBED_MODEL=text-embedding-v3
-```
-
-`scripts/n8n-import.sh` convierte esas variables en credenciales cifradas de n8n (tipo *OpenAI*, con *Base URL* personalizada). El MCP server lee `EMBED_*` para la herramienta `buscar_documentos`.
-
-## 2. Verificar que la llave y el endpoint sirven (antes de desplegar)
-
-Chat (Git Bash, reemplaza los valores):
 ```bash
-curl -s "$LLM_BASE_URL/chat/completions" -H "Authorization: Bearer $LLM_API_KEY" -H "Content-Type: application/json" -d '{"model":"qwen-flash","messages":[{"role":"user","content":"Hola, responde solo OK"}]}'
+cd ~/chatbot-academico-unab
+chmod 600 .env
+nano .env
 ```
-Embeddings:
+
+Guarda estos valores con la llave de tu cuenta. `qwen3.8-flash` figura en el catálogo de la credencial probada y se verificó con llamadas de herramientas.
+
+```dotenv
+LLM_BASE_URL=https://api.b.ai/v1
+LLM_API_KEY=<llave de B.AI>
+LLM_MODEL=qwen3.8-flash
+```
+
+Si cambias el modelo, vuelve a crear el contenedor n8n para que lea `LLM_MODEL`. La importación actualiza las credenciales cifradas y publica las versiones de los workflows que están en el repositorio.
+
 ```bash
-curl -s "$EMBED_BASE_URL/embeddings" -H "Authorization: Bearer $EMBED_API_KEY" -H "Content-Type: application/json" -d '{"model":"text-embedding-v3","input":"prueba"}' | head -c 300
+docker compose up -d n8n
+bash scripts/n8n-import.sh
+bash scripts/smoke-test.sh
 ```
-Si el primero responde con `choices[0].message.content` y el segundo con `data[0].embedding`, el proveedor es compatible.
 
-## 3. Si el proveedor no ofrece embeddings
+Para consultar los modelos desde la VM con la llave ya guardada, usa el siguiente comando. La salida contiene los IDs de modelos.
 
-El RAG necesita un modelo de embeddings. Opciones, en orden de preferencia:
-1. Embeddings del mismo proveedor (si tiene `/v1/embeddings`).
-2. DashScope internacional (Qwen) `text-embedding-v3`: `EMBED_BASE_URL=https://dashscope-intl.aliyuncs.com/compatible-mode/v1`.
-3. OpenAI `text-embedding-3-small`.
+```bash
+python3 - <<'PY'
+import json
+from pathlib import Path
+from urllib.request import Request, urlopen
 
-Importante: **todos los vectores deben venir del mismo modelo**. Si cambias `EMBED_MODEL`, vuelve a ejecutar el workflow *05 Ingesta RAG* (borra y recrea la tabla).
+lines = Path('.env').read_text().splitlines()
+key = next(line.split('=', 1)[1].strip() for line in lines if line.startswith('LLM_API_KEY='))
+request = Request('https://api.b.ai/v1/models', headers={'Authorization': 'Bearer ' + key})
+with urlopen(request, timeout=20) as response:
+    print('\n'.join(model['id'] for model in json.load(response)['data']))
+PY
+```
 
-## 4. Requisitos del modelo de chat
+Referencia de B.AI para [modelos y Chat Completions](https://docs.b.ai/llmservice/api/).
 
-- Debe soportar **tool calling / function calling** (lo usan los AI Agent de los workflows 01 y 03). Qwen-flash lo soporta.
-- Temperatura 0.2 (respuestas) y 0 (clasificador de intención).
-- Costo por pregunta: 2 a 4 llamadas (clasificador + agente con 1-3 herramientas).
+## Embeddings del RAG
+
+B.AI rechazó `/v1/embeddings` durante la verificación. En el despliegue, FastEmbed genera los vectores de 384 dimensiones en CPU y n8n persiste los fragmentos en pgvector. El primer uso descarga el modelo y lo guarda en el volumen `embedding_models`.
+
+```dotenv
+EMBED_BASE_URL=http://mcp-server:9000/v1
+EMBED_API_KEY=<secreto independiente generado con openssl rand -hex 24>
+EMBED_MODEL=sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+```
+
+Puedes configurar otro servicio compatible con `POST /embeddings` mediante `EMBED_*`. Después de cambiar de modelo o actualizar el corpus, aplica el entorno con `docker compose up -d --build mcp-server n8n`, reimporta y ejecuta **05 Ingesta RAG**. Las consultas y la ingesta deben usar el mismo modelo. El workflow publica el nuevo índice cuando termina de insertar los fragmentos.

@@ -24,13 +24,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import co.edu.unab.chatbotacademico.CODIGO_REGEX
 
 @Composable
-fun LoginScreen(baseUrl: String, onLogin: (codigo: String, baseUrl: String) -> Unit) {
+fun LoginScreen(baseUrl: String, apiKey: String, onLogin: (codigo: String, baseUrl: String, apiKey: String) -> Unit) {
     var codigo by remember { mutableStateOf("") }
     var url by remember(baseUrl) { mutableStateOf(baseUrl) }
+    var key by remember(apiKey) { mutableStateOf(apiKey) }
     var touched by remember { mutableStateOf(false) }
     val valido = CODIGO_REGEX.matches(codigo.trim().uppercase())
 
@@ -69,11 +72,21 @@ fun LoginScreen(baseUrl: String, onLogin: (codigo: String, baseUrl: String) -> U
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
         )
+        Spacer(Modifier.height(8.dp))
+        OutlinedTextField(
+            value = key,
+            onValueChange = { key = it },
+            label = { Text("Clave de acceso") },
+            singleLine = true,
+            visualTransformation = PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            modifier = Modifier.fillMaxWidth(),
+        )
         Spacer(Modifier.height(24.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
             OutlinedButton(onClick = { codigo = "U00000001"; touched = true }) { Text("Usar demo") }
             Button(
-                onClick = { onLogin(codigo, url) },
+                onClick = { onLogin(codigo, url, key) },
                 enabled = valido,
                 modifier = Modifier.weight(1f),
             ) { Text("Entrar") }

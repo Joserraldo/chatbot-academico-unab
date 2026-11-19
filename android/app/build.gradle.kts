@@ -11,7 +11,7 @@ val localProps = Properties().apply {
     val f = rootProject.file("local.properties")
     if (f.exists()) f.inputStream().use { load(it) }
 }
-val baseUrl = localProps.getProperty("chatbot.baseUrl", "https://chatbot-unab.duckdns.org").trim()
+val baseUrl = localProps.getProperty("chatbot.baseUrl", "https://chatbotunab.duckdns.org").trim()
 val chatbotKey = localProps.getProperty("chatbot.key", "").trim()
 
 android {

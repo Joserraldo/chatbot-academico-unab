@@ -29,7 +29,7 @@ class MainActivity : ComponentActivity() {
                 Surface(Modifier.fillMaxSize()) {
                     when {
                         !st.loaded -> Box(Modifier.fillMaxSize(), Alignment.Center) { CircularProgressIndicator() }
-                        st.codigo == null -> LoginScreen(st.baseUrl, vm::login)
+                        st.codigo == null -> LoginScreen(st.baseUrl, st.apiKey, vm::login)
                         else -> ChatScreen(st, vm::send, vm::retry, vm::newConversation, vm::logout)
                     }
                 }

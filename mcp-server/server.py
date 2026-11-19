@@ -16,12 +16,15 @@ import os
 import re
 from datetime import date, datetime
 from decimal import Decimal
+from hmac import compare_digest
+from threading import Lock
 
 import httpx
 import uvicorn
 from fastmcp import FastMCP
 from psycopg.rows import dict_row
 from psycopg_pool import ConnectionPool
+from starlette.concurrency import run_in_threadpool
 from starlette.middleware import Middleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
@@ -32,7 +35,21 @@ MCP_TOKEN = os.environ.get("MCP_TOKEN", "")
 LLM_BASE_URL = os.environ.get("LLM_BASE_URL", "").rstrip("/")
 LLM_API_KEY = os.environ.get("LLM_API_KEY", "")
 EMBED_MODEL = os.environ.get("EMBED_MODEL", "text-embedding-v3")
+LOCAL_EMBED_MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 RAG_TABLE = os.environ.get("RAG_TABLE", "rag_documentos")
+
+_encoder = None
+_encoder_lock = Lock()
+
+
+def _local_embeddings(texts: list[str]) -> list[list[float]]:
+    global _encoder
+    with _encoder_lock:
+        if _encoder is None:
+            from fastembed import TextEmbedding
+
+            _encoder = TextEmbedding(LOCAL_EMBED_MODEL, threads=2)
+    return [vector.tolist() for vector in _encoder.embed(texts)]
 
 CODIGO_RE = re.compile(r"^U\d{8}$")
 
@@ -203,14 +220,17 @@ def noticias_recientes(limite: int = 5, categoria: str | None = None) -> list[di
 def buscar_documentos(pregunta: str, k: int = 4) -> list[dict]:
     """Búsqueda semántica (RAG) en los documentos institucionales del CCD y del programa
     indexados por el workflow de ingesta de n8n en pgvector."""
-    if not LLM_BASE_URL:
-        return [{"error": "LLM_BASE_URL no configurado: no se pueden generar embeddings"}]
     k = max(1, min(int(k), 8))
-    resp = httpx.post(f"{LLM_BASE_URL}/embeddings",
-                      headers={"Authorization": f"Bearer {LLM_API_KEY}"},
-                      json={"model": EMBED_MODEL, "input": pregunta}, timeout=30)
-    resp.raise_for_status()
-    vec = resp.json()["data"][0]["embedding"]
+    if EMBED_MODEL == LOCAL_EMBED_MODEL:
+        vec = _local_embeddings([pregunta])[0]
+    else:
+        if not LLM_BASE_URL:
+            return [{"error": "Proveedor de embeddings no configurado"}]
+        resp = httpx.post(f"{LLM_BASE_URL}/embeddings",
+                          headers={"Authorization": f"Bearer {LLM_API_KEY}"},
+                          json={"model": EMBED_MODEL, "input": pregunta}, timeout=30)
+        resp.raise_for_status()
+        vec = resp.json()["data"][0]["embedding"]
     literal = "[" + ",".join(f"{x:.7f}" for x in vec) + "]"
     return _query(
         f"SELECT text AS fragmento, metadata->>'source' AS fuente, "
@@ -222,6 +242,13 @@ def buscar_documentos(pregunta: str, k: int = 4) -> list[dict]:
 # ----------------------------------------------------------------- HTTP / auth
 class BearerAuth(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
+        if request.url.path in ("/v1/embeddings", "/v1/models"):
+            authorization = request.headers.get("authorization", "").encode()
+            if EMBED_MODEL != LOCAL_EMBED_MODEL:
+                return JSONResponse({"error": "local embeddings disabled"}, status_code=404)
+            if not LLM_API_KEY or not compare_digest(authorization, f"Bearer {LLM_API_KEY}".encode()):
+                return JSONResponse({"error": "unauthorized"}, status_code=401)
+            return await call_next(request)
         if request.url.path in ("/health", "/calendario.csv"):
             return await call_next(request)
         if MCP_TOKEN and request.headers.get("authorization", "") != f"Bearer {MCP_TOKEN}":
@@ -232,6 +259,33 @@ class BearerAuth(BaseHTTPMiddleware):
 @mcp.custom_route("/health", methods=["GET"])
 async def health(_: Request):
     return PlainTextResponse("ok")
+
+
+@mcp.custom_route("/v1/models", methods=["GET"])
+async def models(_: Request):
+    return JSONResponse({"object": "list", "data": [{"object": "model", "id": LOCAL_EMBED_MODEL}]})
+
+
+@mcp.custom_route("/v1/embeddings", methods=["POST"])
+async def embeddings(request: Request):
+    try:
+        body = await request.json()
+    except ValueError:
+        return JSONResponse({"error": "invalid JSON"}, status_code=400)
+    if not isinstance(body, dict) or body.get("model") != LOCAL_EMBED_MODEL:
+        return JSONResponse({"error": "unknown embedding model"}, status_code=400)
+    texts = body.get("input")
+    if isinstance(texts, str):
+        texts = [texts]
+    if not isinstance(texts, list) or not 1 <= len(texts) <= 512 or any(
+        not isinstance(text, str) or not 1 <= len(text) <= 16000 for text in texts
+    ):
+        return JSONResponse({"error": "invalid embedding input"}, status_code=400)
+    vectors = await run_in_threadpool(_local_embeddings, texts)
+    return JSONResponse({"object": "list", "model": LOCAL_EMBED_MODEL, "data": [
+        {"object": "embedding", "index": i, "embedding": vector}
+        for i, vector in enumerate(vectors)
+    ]})
 
 
 @mcp.custom_route("/calendario.csv", methods=["GET"])

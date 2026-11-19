@@ -5,8 +5,8 @@ App nativa (Kotlin + Jetpack Compose + Material 3) que sirve de cliente del chat
 
 ## Qué hace
 
-- **Inicio**: el estudiante escribe su código (`^U\d{8}$`, p. ej. `U00000001`) y, opcionalmente, cambia la URL del servidor
-  (precargada con `BuildConfig.BASE_URL`). Todo se guarda en DataStore. El botón **Usar demo** llena `U00000001`.
+- **Inicio**: el estudiante escribe su código (`^U\d{8}$`, p. ej. `U00000001`) y, opcionalmente, cambia la URL y la clave de acceso del servidor
+  (precargada con `BuildConfig.BASE_URL`). Los datos se guardan en DataStore privado de la aplicaci?n, incluida la clave en texto sin cifrar. El botón **Usar demo** llena `U00000001`.
 - **Chat**: burbujas usuario/bot, indicador "escribiendo…", chips de sugerencias rápidas, la intención como etiqueta
   pequeña bajo la respuesta del bot y las fuentes si llegan. Render simple de `**negrita**` y listas con `- `.
 - **Errores**: mensaje amable y botón **Reintentar** (reenvía el último mensaje). Timeout de lectura de 90 s.
@@ -21,11 +21,11 @@ App nativa (Kotlin + Jetpack Compose + Material 3) que sirve de cliente del chat
 
 ```properties
 sdk.dir=C\:/Users/jose/AppData/Local/Android/Sdk
-chatbot.baseUrl=https://chatbot-unab.duckdns.org
+chatbot.baseUrl=https://chatbotunab.duckdns.org
 chatbot.key=TU_CLAVE_X_CHATBOT_KEY
 ```
 
-Valores por defecto: `chatbot.baseUrl=https://chatbot-unab.duckdns.org`, `chatbot.key=` (vacía).
+Valores por defecto: `chatbot.baseUrl=https://chatbotunab.duckdns.org`, `chatbot.key=` (vacía).
 Se exponen como `BuildConfig.BASE_URL` y `BuildConfig.CHATBOT_KEY`. Si cambias `local.properties` hay que recompilar.
 
 ## Compilar (Git Bash)
@@ -63,13 +63,13 @@ chatbot.baseUrl=http://10.0.2.2:5678
 o cambia la URL en la pantalla de inicio. El tráfico en claro (`http`) solo se permite para `10.0.2.2` y `localhost`
 (`res/xml/network_security_config.xml`); cualquier otro host exige HTTPS.
 
-**Contra el servidor desplegado:** deja `chatbot.baseUrl=https://chatbot-unab.duckdns.org` y pon la clave real en
-`chatbot.key`. Entra con `U00000001` (demo) o un código real.
+**Contra el servidor desplegado:** deja `chatbot.baseUrl=https://chatbotunab.duckdns.org` e introduce la clave real en el campo **Clave de acceso** de la pantalla de inicio, o config?rala en
+`chatbot.key` para incorporarla en la compilaci?n. Entra con `U00000001` (demo) o un código real.
 
 Prueba rápida del contrato sin la app:
 
 ```bash
-curl -X POST "https://chatbot-unab.duckdns.org/webhook/chat" -H "Content-Type: application/json" -H "X-Chatbot-Key: TU_CLAVE" -d '{"sessionId":"test-1","codigoEstudiante":"U00000001","mensaje":"¿Cuántos semestres me faltan?"}'
+curl -X POST "https://chatbotunab.duckdns.org/webhook/chat" -H "Content-Type: application/json" -H "X-Chatbot-Key: TU_CLAVE" -d '{"sessionId":"test-1","codigoEstudiante":"U00000001","mensaje":"¿Cuántos semestres me faltan?"}'
 ```
 
 ## Contrato del API
@@ -108,4 +108,4 @@ Gradle 8.10.2 · AGP 8.7.3 · Kotlin 2.1.0 · Compose BOM 2024.12.01 · compileS
 
 - OkHttp directo (sin Retrofit/Ktor) por simplicidad: un solo endpoint.
 - Sin librería de markdown: un parser mínimo de negrita y viñetas basta para las respuestas del bot.
-- La clave `X-Chatbot-Key` queda embebida en el APK (BuildConfig): sirve para un proyecto de clase, no es un secreto fuerte.
+- La clave `X-Chatbot-Key` puede introducirse en la aplicaci?n o incorporarse al APK mediante BuildConfig. La primera opci?n evita distribuirla en el APK, pero se guarda sin cifrar en el almacenamiento privado de la aplicaci?n. Ninguna de las dos sustituye la autenticaci?n de producci?n.

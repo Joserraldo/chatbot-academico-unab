@@ -67,7 +67,8 @@
         "options": {
           "temperature": 0.2,
           "maxTokens": 900,
-          "timeout": 60000
+          "timeout": 60000,
+          "extraBody": "={{ ($env.LLM_MODEL || '').startsWith('qwen') ? '{\"enable_thinking\":false}' : '{}' }}"
         }
       },
       "credentials": {
@@ -134,7 +135,9 @@
       ],
       "parameters": {
         "model": "={{ $env.EMBED_MODEL }}",
-        "options": {}
+        "options": {
+          "encodingFormat": "float"
+        }
       },
       "credentials": {
         "openAiApi": {
