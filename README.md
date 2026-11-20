@@ -45,7 +45,7 @@ Ciencia de Datos · Trabajo final · Ingeniería de Sistemas · Universidad Aut�
 |---|:---:|:---:|---|---|
 | **Arquitectura** | 20 % | ✅ | AWS EC2 con Docker Compose: **6 contenedores** (Caddy con HTTPS, n8n, PostgreSQL + pgvector, servidor MCP, servicios-api y scraper). Dominio DuckDNS con TLS de Let's Encrypt | [§1 Arquitectura](#1-arquitectura) · [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md) · [docker-compose.yml](docker-compose.yml) · [docs/DESPLIEGUE-AWS.md](docs/DESPLIEGUE-AWS.md) |
 | **RAG** | 20 % | ✅ | Ingesta con chunking y embeddings (MiniLM multilingüe, 384 dimensiones) en **pgvector**: **26 fragmentos de 6 documentos** institucionales. El agente 01 recupera y **cita la fuente** | [workflow 05](n8n/workflows/05_wf05IngestaRAG00.json) · [workflow 01](n8n/workflows/01_wf01GeneralRAG00.json) · [data/docs_ccd/](data/docs_ccd/) · herramienta MCP `buscar_documentos` |
-| **Workflows n8n** | 20 % | ✅ | **7 workflows** generados como código ([build_workflows.py](n8n/build_workflows.py)): router con guardrails, visión y clasificación de intención; 01 RAG, 02 Calendario, 03 Historial (agente MCP), 04 Noticias, 05 Ingesta y 06 Trámites/pagos. Los 6 de chat están **publicados** | [n8n/workflows/](n8n/workflows/) · [docs/PROMPTS.md](docs/PROMPTS.md) · [scripts/smoke-test.sh](scripts/smoke-test.sh) (15/15 en verde) |
+| **Workflows n8n** | 20 % | ✅ | **7 workflows** generados como código ([build_workflows.py](n8n/build_workflows.py)): router con guardrails, visión y clasificación de intención; 01 RAG, 02 Calendario, 03 Historial (agente MCP), 04 Noticias, 05 Ingesta y 06 Trámites/pagos. Los 6 de chat están **publicados** | [capturas del editor](#capturas) · [n8n/workflows/](n8n/workflows/) · [docs/PROMPTS.md](docs/PROMPTS.md) · [scripts/smoke-test.sh](scripts/smoke-test.sh) (15/15 en verde) |
 | **Base de datos** | 10 % | ✅ | PostgreSQL 16 + pgvector. Esquema `academico` (33 tablas, **8 vistas analíticas**, **206 estudiantes** en **6 programas**, que simulan Banner, Cosmos y TEMA), esquema `servicios` (reservas, pagos y riesgo) y vectores RAG. Roles de solo lectura para los agentes | [db/init/](db/init/) · [docs/MODELO-DATOS.md](docs/MODELO-DATOS.md) · [¿Y Supabase?](#y-supabase) |
 | **App móvil** | 20 % | ✅ | App Android nativa (Kotlin + Jetpack Compose) y web móvil, ambas conectadas al webhook | [android/](android/) · [APK](https://chatbotunab.duckdns.org/app/descargas/asistente-unab-360.apk) · capturas 40-47 |
 | **Documentación** | 10 % | ✅ | README, manual de usuario, arquitectura, contratos, prompts, bitácora y evidencias | [§9 Documentación](#9-documentación) · [BITACORA.md](BITACORA.md) · [docs/evidencias/](docs/evidencias/) |
@@ -106,6 +106,20 @@ El SQL es **100 % compatible con Supabase**: para migrar basta ejecutar `db/init
 | 📱 | **Web + Android** | Mismo contrato `POST /webhook/chat`; panel "Hoy en tu U", dictado por voz, "continúa en tu celular" por QR |
 
 ## Capturas
+
+**Workflows de n8n en producción** (editor en <https://chatbotunab.duckdns.org/home/workflows>)
+
+<img src="docs/evidencias/v2/48-n8n-00-router.png" alt="Router del chatbot en n8n">
+
+*00 Router: webhook → guardrail de entrada → ¿bloqueado? → ¿imagen? (visión) → clasificar intención (LLM) → sub-workflow 01-04 o 06 → guardrail de salida → enriquecer (tarjetas y gráficas) → log en `chat_log` → responder.*
+
+| 01 RAG (pgvector) | 02 Calendario | 03 Historial · agente MCP |
+|:---:|:---:|:---:|
+| <img src="docs/evidencias/v2/48-n8n-01-rag.png" width="300"> | <img src="docs/evidencias/v2/48-n8n-02-calendario.png" width="300"> | <img src="docs/evidencias/v2/48-n8n-03-mcp.png" width="300"> |
+
+| 04 Noticias (scraping cada 6 h + chat) | 05 Ingesta RAG (chunking + embeddings) | 06 Trámites, reservas y pagos |
+|:---:|:---:|:---:|
+| <img src="docs/evidencias/v2/48-n8n-04-noticias.png" width="300"> | <img src="docs/evidencias/v2/48-n8n-05-ingesta.png" width="300"> | <img src="docs/evidencias/v2/48-n8n-06-tramites.png" width="300"> |
 
 **Web: personas demo, panel "Hoy en tu U" y gráficas**
 
