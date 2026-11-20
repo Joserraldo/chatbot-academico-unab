@@ -671,6 +671,17 @@
   .fig img{display:block;width:100%;flex:1;min-height:0;object-fit:contain}
   .fig .ph{aspect-ratio:4/3}
   .fig .shotcap{margin-top:4px;flex:none}
+  .vgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;align-items:stretch;flex:1}
+  .vcard{background:#fff;border:1px solid rgba(27,42,78,.12);border-top:3px solid var(--orange);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px;box-shadow:0 10px 22px -20px rgba(27,42,78,.55)}
+  .vthumb{position:relative;display:block;border-radius:10px;overflow:hidden;background:#1B2A4E;aspect-ratio:16/9}
+  .vthumb img{width:100%;height:100%;object-fit:cover;display:block}
+  .vplay{position:absolute;inset:0;margin:auto;width:58px;height:58px;border-radius:50%;background:rgba(134,0,221,.92);color:#fff;display:flex;align-items:center;justify-content:center;font-size:24px;padding-left:4px;box-sizing:border-box}
+  .vdur{position:absolute;right:8px;bottom:8px;background:rgba(0,0,0,.78);color:#fff;font-size:12px;font-weight:800;padding:2px 7px;border-radius:6px}
+  .vinfo h3{font-size:17px;color:var(--navy);margin-bottom:4px}
+  .vinfo p{font-size:13px;line-height:1.4;color:var(--muted);margin-bottom:6px}
+  .vurl{font-size:13px;font-weight:800}
+  .vqr{width:130px;height:130px;align-self:center;margin-top:auto;image-rendering:pixelated}
+  .vcard.apk{justify-content:center}
   .qrbox{background:#fff;border-radius:20px;padding:18px;box-shadow:0 26px 50px -26px rgba(0,0,0,.7);display:flex;flex-direction:column;align-items:center;gap:8px}
   .qrbox img{width:300px;height:300px;display:block;image-rendering:pixelated}
   .qrbox .qrurl{font-size:15px;font-weight:800;color:var(--navy);letter-spacing:.01em}
@@ -1056,7 +1067,7 @@
         <div class="band-copy"><p class="kicker">APP ANDROID Y WEB</p><h2>Mismo contrato, dos clientes</h2></div>
         <div class="band-logo"><img src="../assets/logo-unab.png" alt="UNAB"></div>
       </header>
-      <div class="body"><div class="cols" style="grid-template-columns:repeat(4,1fr);flex:1;align-items:center"><figure class="anim" style="margin:0"><div class="phn" style="max-width:205px"><img src="img/v2/39-movil.png" alt="Web móvil del asistente" onerror="fb(this)"><div class="ph"><div><b>39-movil.png</b>Captura en preparación</div></div></div><p class="shotcap">Web móvil</p></figure><figure class="anim" style="margin:0"><div class="phn" style="max-width:205px"><img src="img/v2/40-android-login.png" alt="App Android: pantalla de acceso" onerror="fb(this)"><div class="ph"><div><b>40-android-login.png</b>Captura en preparación</div></div></div><p class="shotcap">Android · login</p></figure><figure class="anim" style="margin:0"><div class="phn" style="max-width:205px"><img src="img/v2/41-android-chat.png" alt="App Android: conversación" onerror="fb(this)"><div class="ph"><div><b>41-android-chat.png</b>Captura en preparación</div></div></div><p class="shotcap">Android · chat</p></figure><figure class="anim" style="margin:0"><div class="phn" style="max-width:205px"><img src="img/v2/42-android-pago.png" alt="App Android: pago con Bold en WebView" onerror="fb(this)"><div class="ph"><div><b>42-android-pago.png</b>Captura en preparación</div></div></div><p class="shotcap">Android · pago Bold</p></figure></div><div class="pills anim" style="--i:5"><span class="pill">POST /webhook/chat</span><span class="pill t">Kotlin + Jetpack Compose</span><span class="pill o">Pago en WebView propio</span><span class="pill r">La clave se pide en la app, no va incrustada</span></div></div>
+      <div class="body"><div class="cols" style="grid-template-columns:repeat(4,1fr);flex:1;align-items:center"><figure class="anim" style="margin:0"><div class="phn" style="max-width:205px"><img src="img/v2/39-movil.png" alt="Web móvil del asistente" onerror="fb(this)"><div class="ph"><div><b>39-movil.png</b>Captura en preparación</div></div></div><p class="shotcap">Web móvil</p></figure><figure class="anim" style="margin:0"><div class="phn" style="max-width:205px"><img src="img/v2/40-android-login.png" alt="App Android: pantalla de acceso" onerror="fb(this)"><div class="ph"><div><b>40-android-login.png</b>Captura en preparación</div></div></div><p class="shotcap">Android · login</p></figure><figure class="anim" style="margin:0"><div class="phn" style="max-width:205px"><img src="img/v2/41-android-chat.png" alt="App Android: conversación" onerror="fb(this)"><div class="ph"><div><b>41-android-chat.png</b>Captura en preparación</div></div></div><p class="shotcap">Android · chat</p></figure><figure class="anim" style="margin:0"><div class="phn" style="max-width:205px"><img src="img/v2/42-android-pago.png" alt="App Android: pago con Bold en WebView" onerror="fb(this)"><div class="ph"><div><b>42-android-pago.png</b>Captura en preparación</div></div></div><p class="shotcap">Android · pago Bold</p></figure></div><div class="pills anim" style="--i:5"><span class="pill">POST /webhook/chat</span><span class="pill t">Kotlin + Jetpack Compose</span><span class="pill o">Bold en WebView (modo redirect) · APK 2.2</span><span class="pill r">La clave se pide en la app, no va incrustada</span></div></div>
       <footer class="foot"><span class="org">Asistente UNAB 360 · Ciencia de Datos · UNAB</span><span class="num">17</span></footer>
     </section>
 
@@ -1152,6 +1163,31 @@
       <footer class="foot"><span class="org">Asistente UNAB 360 · Ciencia de Datos · UNAB</span><span class="num">22</span></footer>
     </section>
 
+    <section class="slide s" role="group" aria-roledescription="diapositiva" aria-label="Videos y descarga">
+      <header class="band slim anim" style="--i:0">
+        <div class="band-copy"><p class="kicker">VIDEOS Y APP ANDROID</p><h2>Míralo funcionando, en la web y en el celular</h2></div>
+        <div class="band-logo"><img src="../assets/logo-unab.png" alt="UNAB"></div>
+      </header>
+      <div class="body">
+<div class="vgrid">
+<div class="vcard anim" style="--i:1">
+  <a class="vthumb" href="https://youtu.be/iAiiowTgKYs" target="_blank" rel="noopener" aria-label="Abrir en YouTube: Demo funcional"><img src="https://img.youtube.com/vi/iAiiowTgKYs/hqdefault.jpg" alt="Miniatura del video Demo funcional" onerror="this.style.visibility='hidden'"><span class="vplay">▶</span><span class="vdur">4:28</span></a>
+  <div class="vinfo"><h3>Demo funcional</h3><p>Recorrido real en la web y en Android: chat, gráficas, pago con Bold, imagen con QR y panel Hoy.</p><a class="vurl" href="https://youtu.be/iAiiowTgKYs" target="_blank" rel="noopener">youtu.be/iAiiowTgKYs</a></div>
+  <img class="vqr" src="/api/qr?url=https%3A%2F%2Fyoutu.be%2FiAiiowTgKYs" alt="Código QR del video Demo funcional" onerror="this.style.display='none'">
+</div>
+<div class="vcard anim" style="--i:2">
+  <a class="vthumb" href="https://youtu.be/e0BDTLoeVEg" target="_blank" rel="noopener" aria-label="Abrir en YouTube: Tráiler Asistente UNAB 360"><img src="https://img.youtube.com/vi/e0BDTLoeVEg/hqdefault.jpg" alt="Miniatura del video Tráiler Asistente UNAB 360" onerror="this.style.visibility='hidden'"><span class="vplay">▶</span><span class="vdur">1:10</span></a>
+  <div class="vinfo"><h3>Tráiler Asistente UNAB 360</h3><p>Presentación breve del proyecto.</p><a class="vurl" href="https://youtu.be/e0BDTLoeVEg" target="_blank" rel="noopener">youtu.be/e0BDTLoeVEg</a></div>
+  <img class="vqr" src="/api/qr?url=https%3A%2F%2Fyoutu.be%2Fe0BDTLoeVEg" alt="Código QR del video Tráiler Asistente UNAB 360" onerror="this.style.display='none'">
+</div>
+<div class="vcard apk anim" style="--i:3">
+  <div class="vinfo"><h3>App Android 2.2</h3><p>Descarga el APK e instálala. El pago con Bold funciona dentro de la app (modo redirect).</p><a class="vurl" href="https://chatbotunab.duckdns.org/app/descargas/asistente-unab-360.apk" target="_blank" rel="noopener">chatbotunab.duckdns.org/app/descargas</a></div>
+  <img class="vqr" src="/api/qr?url=https%3A%2F%2Fchatbotunab.duckdns.org%2Fapp%2Fdescargas%2Fasistente-unab-360.apk" alt="Código QR de descarga del APK" onerror="this.style.display='none'">
+</div>
+</div></div>
+      <footer class="foot"><span class="org">Asistente UNAB 360 · Ciencia de Datos · UNAB</span><span class="num">23</span></footer>
+    </section>
+
     <section class="slide s dark" role="group" aria-roledescription="diapositiva" aria-label="Cierre y preguntas">
       <header class="band slim anim" style="--i:0"><div class="band-copy"><p class="kicker">CIERRE</p><h2>Gracias. ¿Preguntas?</h2></div><div class="band-logo"><img src="../assets/logo-unab.png" alt="UNAB"></div></header>
       <div class="body">
@@ -1164,21 +1200,21 @@
           <div class="col" style="align-items:center"><div class="qrbox anim" style="--i:2"><img src="/api/qr?url=https%3A%2F%2Fchatbotunab.duckdns.org%2Fapp%2F" alt="Código QR de la demo" style="width:230px;height:230px" onerror="this.style.display='none'"><span class="qrurl">chatbotunab.duckdns.org/app</span></div></div>
         </div>
       </div>
-      <footer class="foot"><span class="org">Asistente UNAB 360 · Ciencia de Datos · UNAB</span><span class="num">23</span></footer>
+      <footer class="foot"><span class="org">Asistente UNAB 360 · Ciencia de Datos · UNAB</span><span class="num">24</span></footer>
     </section>
 
   </main>
 </div>
 
 <div class="hud" role="toolbar" aria-label="Controles de la presentación">
-  <div class="progress" id="progress" role="progressbar" aria-label="Progreso de la presentación" aria-valuemin="1" aria-valuemax="22" aria-valuenow="1" aria-valuetext="Diapositiva 1 de 22"><i id="bar"></i></div>
+  <div class="progress" id="progress" role="progressbar" aria-label="Progreso de la presentación" aria-valuemin="1" aria-valuemax="24" aria-valuenow="1" aria-valuetext="Diapositiva 1 de 22"><i id="bar"></i></div>
   <div class="hud-left">
     <button type="button" id="prev" aria-label="Diapositiva anterior">‹</button>
     <button type="button" id="next" aria-label="Diapositiva siguiente">›</button>
     <span class="hint">← → · clic · F pantalla completa · N guion</span>
   </div>
   <div class="hud-center">
-    <span id="counter" aria-live="polite" aria-atomic="true">1 / 23</span>
+    <span id="counter" aria-live="polite" aria-atomic="true">1 / 24</span>
     <button type="button" id="full" aria-label="Pantalla completa (F)" aria-pressed="false">⛶ <span>Pantalla completa</span></button>
   </div>
 </div>
@@ -1223,6 +1259,10 @@
  },
  {
   "w": "Santiago",
+  "t": "Estos son los siete workflows publicados en n8n, en la EC2: el router, que clasifica la intención, y seis especializados: RAG, calendario, MCP, noticias, ingesta de documentos y trámites. Son capturas del editor de n8n en producción, no un diagrama."
+ },
+ {
+  "w": "Santiago",
   "t": "El flujo de una pregunta, en ocho pasos. La app manda sesión, código, mensaje e imagen. El guardrail de entrada revisa código, inyección, SQL y tamaño. Si hay imagen, OpenCV lee el QR y qwen transcribe; ese resultado se trata como dato, nunca como instrucción. Luego se clasifica la intención, el agente usa sus herramientas, el guardrail de salida limpia la respuesta, se enriquece con tarjetas, QR y gráficas, y todo queda en el chat_log para auditoría."
  },
  {
@@ -1263,7 +1303,7 @@
  },
  {
   "w": "Santiago",
-  "t": "La app: el mismo contrato, dos clientes. La web móvil y la app Android en Kotlin con Jetpack Compose consumen el mismo POST /webhook/chat. El pago se hace en un WebView propio, y la clave se pide en la app, no va incrustada. [Aquí pasa la palabra a José.]"
+  "t": "La app: el mismo contrato, dos clientes. La web móvil y la app Android en Kotlin con Jetpack Compose consumen el mismo POST /webhook/chat. El pago con Bold se hace en un WebView propio, en modo redirect, y la clave se pide en la app, no va incrustada. [Aquí pasa la palabra a José.]"
  },
  {
   "w": "José",
@@ -1286,6 +1326,10 @@
   "t": "Cada criterio de la rúbrica tiene un lugar donde verlo: el scraper en scraper/ y docs/SCRAPER.md, la app Android en android/ y las capturas, la documentación técnica en el README y docs/, y la pertinencia pedagógica en PROMPTS.md y PERTINENCIA-PEDAGOGICA.md. Todo está en el repositorio."
  },
  {
+  "w": "José",
+  "t": "Y si quieren verlo funcionando sin esperar: tenemos dos videos en YouTube. La demo funcional, de 4 minutos 28, recorre la web y la app Android: chat, gráficas, pago con Bold, imagen con QR y el panel Hoy. Y un tráiler de 1 minuto 10. Los QR abren cada video, y el tercero descarga el APK de la app Android 2.2."
+ },
+  {
   "w": "José",
   "t": "Para cerrar: un asistente que cruza los datos de la universidad, explica con evidencia y actúa con seguridad. La demo sigue disponible en chatbotunab.duckdns.org/app, la analítica en /app/analitica y el código en GitHub. Como trabajo futuro: validar con estudiantes reales y revisión ética, calibrar el modelo por programa y conectar fuentes institucionales reales. Gracias, ¿preguntas?"
  }
