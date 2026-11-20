@@ -1,3 +1,13 @@
 [
-  { "nombre": "UNAB - Noticias", "url": "https://unab.edu.co/feed/" }
+  { "nombre": "UNAB - Noticias", "url": "https://unab.edu.co/feed/", "tipo": "rss", "categoria_base": "general", "clasificacion": "unab", "timeout": 20 },
+  { "nombre": "Google Noticias - educación superior Colombia", "url": "https://news.google.com/rss/search?q=educaci%C3%B3n+superior+Colombia&hl=es-419&gl=CO&ceid=CO:es-419", "tipo": "google_news", "categoria_base": "educacion", "timeout": 20 },
+  { "nombre": "Google Noticias - ingeniería de sistemas", "url": "https://news.google.com/rss/search?q=ingenier%C3%ADa+de+sistemas&hl=es-419&gl=CO&ceid=CO:es-419", "tipo": "google_news", "categoria_base": "ingenieria_sistemas", "timeout": 20 },
+  { "nombre": "Google Noticias - inteligencia artificial", "url": "https://news.google.com/rss/search?q=inteligencia+artificial&hl=es-419&gl=CO&ceid=CO:es-419", "tipo": "google_news", "categoria_base": "tecnologia", "timeout": 20 },
+  { "nombre": "Google Noticias - tecnología Colombia", "url": "https://news.google.com/rss/search?q=tecnolog%C3%ADa+Colombia&hl=es-419&gl=CO&ceid=CO:es-419", "tipo": "google_news", "categoria_base": "tecnologia", "timeout": 20 },
+  { "nombre": "Google Noticias - Ministerio de Educación Colombia", "url": "https://news.google.com/rss/search?q=Ministerio+de+Educaci%C3%B3n+Colombia&hl=es-419&gl=CO&ceid=CO:es-419", "tipo": "google_news", "categoria_base": "educacion", "timeout": 20 },
+  { "nombre": "Xataka", "url": "https://www.xataka.com/feedburner.xml", "tipo": "rss", "categoria_base": "tecnologia", "timeout": 25 },
+  { "nombre": "El Tiempo - Tecnósfera", "url": "https://www.eltiempo.com/rss/tecnosfera.xml", "tipo": "rss", "categoria_base": "tecnologia", "timeout": 20 },
+  { "nombre": "ENTER.CO", "url": "https://www.enter.co/feed/", "tipo": "rss", "categoria_base": "tecnologia", "timeout": 25 },
+  { "nombre": "Hipertextual", "url": "https://hipertextual.com/feed", "tipo": "rss", "categoria_base": "tecnologia", "timeout": 20 },
+  { "nombre": "WIRED en Español", "url": "https://es.wired.com/feed/rss", "tipo": "rss", "categoria_base": "tecnologia", "timeout": 20 }
 ]
