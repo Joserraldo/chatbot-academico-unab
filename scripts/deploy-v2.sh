@@ -20,11 +20,12 @@ bash scripts/migrate-v2.sh
 
 # 3) Servicios (construye servicios-api, MCP y scraper nuevos; recrea n8n y caddy con el entorno nuevo)
 docker compose up -d --build
+docker compose up -d --force-recreate caddy   # el Caddyfile es un bind mount: recrear para leer las rutas nuevas
 docker compose ps --format 'table {{.Name}}\t{{.Status}}'
 
 # 4) Workflows (router v2 + wf06) y re-ingesta del RAG con el documento de trámites
 bash scripts/n8n-import.sh
-docker compose exec -T n8n n8n execute --id=wf05IngestaRAG00 >/dev/null && echo "Ingesta RAG ejecutada"
+docker compose exec -T -e N8N_RUNNERS_BROKER_PORT=5689 -e QUEUE_HEALTH_CHECK_PORT=5690 n8n n8n execute --id=wf05IngestaRAG00 >/dev/null && echo "Ingesta RAG ejecutada"
 
 # 5) Pruebas de humo
 bash scripts/smoke-test.sh
