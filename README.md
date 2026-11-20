@@ -65,6 +65,10 @@ Ciencia de Datos · Trabajo final · Ingeniería de Sistemas · Universidad Aut�
 |:---:|:---:|:---:|:---:|
 | <img src="docs/evidencias/v2/39-movil.png" width="190"> | <img src="docs/evidencias/v2/40-android-login.png" width="190"> | <img src="docs/evidencias/v2/41-android-chat.png" width="190"> | <img src="docs/evidencias/v2/42-android-pago.png" width="190"> |
 
+| Android: inicio | Android: checkout Bold embebido | Android: panel Hoy | Android: lectura de imagen |
+|:---:|:---:|:---:|:---:|
+| <img src="docs/evidencias/v2/46-android-inicio.png" width="190"> | <img src="docs/evidencias/v2/43-android-bold.png" width="190"> | <img src="docs/evidencias/v2/44-android-hoy.png" width="190"> | <img src="docs/evidencias/v2/45-android-imagen.png" width="190"> |
+
 **Modelo de riesgo académico**
 
 | Curva ROC | Matriz de confusión | Variables más influyentes |

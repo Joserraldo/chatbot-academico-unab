@@ -255,11 +255,17 @@ Escribe `Muéstrame las novedades de la universidad` o `¿Qué noticias hay hoy?
 
 ![Chat en Android](evidencias/v2/41-android-chat.png)
 
+| Inicio con sugerencias | Panel **Hoy en tu U** | Lectura de imagen |
+|:---:|:---:|:---:|
+| <img src="evidencias/v2/46-android-inicio.png" width="200"> | <img src="evidencias/v2/44-android-hoy.png" width="200"> | <img src="evidencias/v2/45-android-imagen.png" width="200"> |
+
 ### Pago en Android
 
 Al pulsar **Pagar** en una tarjeta de pago, la app abre `https://chatbotunab.duckdns.org/app/pagar.html?order=...` en una **vista web dentro de la app** (con JavaScript activado). Allí pagas con las tarjetas de prueba de la [sección 4.7](#47-pagos-con-bold). Si falla, aparece **No se pudo abrir el pago** y el botón **Reintentar**.
 
-![Pago en Android](evidencias/v2/42-android-pago.png)
+| Tarjeta de pago | Checkout Bold dentro de la app |
+|:---:|:---:|
+| <img src="evidencias/v2/42-android-pago.png" width="220"> | <img src="evidencias/v2/43-android-bold.png" width="220"> |
 
 ---
 
