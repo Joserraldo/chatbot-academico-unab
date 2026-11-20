@@ -24,7 +24,11 @@ def noticias(conn, limite):
         FROM noticias
         WHERE fecha_noticia >= now() - INTERVAL '48 hours'
            OR NOT EXISTS (SELECT 1 FROM noticias WHERE fecha_noticia >= now() - INTERVAL '48 hours')
-        ORDER BY fecha_noticia DESC, id DESC LIMIT %s
+        ORDER BY (fecha_noticia::date >= (now() - INTERVAL '24 hours')::date) DESC,
+                 CASE WHEN fuente ILIKE 'UNAB%%' THEN 0
+                      WHEN categoria IN ('educacion', 'ingenieria_sistemas', 'convocatoria', 'curso', 'certificacion') THEN 1
+                      ELSE 2 END,
+                 fecha_noticia DESC, id DESC LIMIT %s
     """, (limite,)).fetchall()
 
 

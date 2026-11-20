@@ -113,11 +113,17 @@ def enriquecer(conn, peticion):
         if len(graficas) == 2:
             break
 
+    # Regla 6: las órdenes recién creadas (p. ej. por el agente wf06) se muestran SOLO en turnos de
+    # pagos/reservas; así una orden pendiente no se "pega" a respuestas de otros temas.
+    turno_de_pago = intencion == "tramites" or re.search(
+        r"pag|abon|reserv|apartar|matricula|multa|bold|cobr", mensaje)
+    if not turno_de_pago:
+        return {"acciones": limitar_acciones(acciones), "graficas": graficas}
     reservas_order_id = reserva["order_id"] if reserva else None
     pagos = conn.execute("""
         SELECT * FROM servicios.pago_orden
         WHERE codigo_estudiante = %s AND estado = 'pendiente'
-          AND (creado_en > now() - INTERVAL '5 minutes' OR order_id = %s)
+          AND (creado_en > now() - INTERVAL '3 minutes' OR order_id = %s)
         ORDER BY (order_id IS NOT DISTINCT FROM %s) DESC, creado_en DESC, order_id
         LIMIT 4
     """, (codigo, reservas_order_id, reservas_order_id)).fetchall()

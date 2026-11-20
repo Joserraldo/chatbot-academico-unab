@@ -275,12 +275,12 @@
     if (Array.isArray(im)) {
       im.forEach(function (x) {
         if (Array.isArray(x)) out.push({ k: String(x[0]), v: num(x[1]) });
-        else if (x && typeof x === "object") out.push({ k: String(x.feature || x.nombre || x.variable || x.name || "—"), v: num(x.importancia !== undefined ? x.importancia : (x.importance !== undefined ? x.importance : x.valor)) });
+        else if (x && typeof x === "object") out.push({ k: String(x.factor || x.feature || x.nombre || x.variable || x.name || "—"), v: num(x.importancia !== undefined ? x.importancia : (x.importance !== undefined ? x.importance : x.valor)) });
       });
     } else if (im && typeof im === "object") {
       Object.keys(im).forEach(function (k) { out.push({ k: k, v: num(im[k]) }); });
     }
-    return out.sort(function (a, b) { return b.v - a.v; }).slice(0, 8);
+    return out.sort(function (a, b) { return Math.abs(b.v) - Math.abs(a.v); }).slice(0, 8);
   }
 
   function cell(v, label, good) {
@@ -326,13 +326,13 @@
     right.appendChild(el("h3", "", "Variables más importantes"));
     var feats = parseImportances(m.importancias);
     if (feats.length) {
-      var max = feats[0].v || 1;
+      var max = Math.abs(feats[0].v) || 1;
       var ul = el("ul", "feat");
       feats.forEach(function (f) {
         var li = el("li");
         li.appendChild(el("span", "", f.k.replace(/_/g, " ")));
         li.appendChild(el("span", "val", f.v.toFixed(3)));
-        var bar = el("div", "bar"); var i = document.createElement("i"); i.style.width = Math.max(2, (f.v / max) * 100) + "%"; bar.appendChild(i); li.appendChild(bar);
+        var bar = el("div", "bar"); var i = document.createElement("i"); i.style.width = Math.max(2, (Math.abs(f.v) / max) * 100) + "%"; bar.appendChild(i); li.appendChild(bar);
         ul.appendChild(li);
       });
       right.appendChild(ul);

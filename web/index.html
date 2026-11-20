@@ -1832,7 +1832,11 @@
         if (a.tipo === "pago") c = buildPagoCard(a);
         else if (a.tipo === "enlace") c = buildEnlaceCard(a);
         else if (a.tipo === "qr") c = buildQrCard(a);
-        else if (a.tipo === "reserva") c = buildReservaCard(a);
+        else if (a.tipo === "reserva") {
+          // Si la misma orden ya trae su tarjeta de pago, la reserva no repite el botón "Pagar con Bold".
+          var pagoAparte = a.orderId && acciones.some(function (x) { return x && x.tipo === "pago" && x.orderId === a.orderId; });
+          c = buildReservaCard(pagoAparte ? Object.assign({}, a, { orderId: null }) : a);
+        }
         else if (a.tipo === "sugerencias" && Array.isArray(a.opciones)) sugerencias = buildSugerencias(a.opciones);
         if (c) cards.appendChild(c);
       });

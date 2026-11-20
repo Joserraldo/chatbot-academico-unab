@@ -267,6 +267,13 @@
     s.setAttribute("data-description", String(b.description || "Pago UNAB").slice(0, 100));
     s.setAttribute("data-redirection-url", b.redirectionUrl);
     s.setAttribute("data-render-mode", "embedded");
+    /* La librería de Bold lee los data-* de su propio <script>: debe llevar el src. */
+    s.src = BOLD_LIB;
+    s.async = true;
+    s.onerror = function () {
+      slot.replaceChildren();
+      slot.appendChild(el("div", "error", "No se pudo cargar la pasarela de Bold. Revisa tu conexión y recarga la página."));
+    };
     slot.appendChild(s);
   }
 
@@ -299,13 +306,8 @@
     view.appendChild(slot);
     view.appendChild(testCards());
 
-    loadBold().then(function () {
-      slot.replaceChildren();
-      injectBoldButton(slot, p.bold);
-    }).catch(function () {
-      slot.replaceChildren();
-      slot.appendChild(el("div", "error", "No se pudo cargar la pasarela de Bold. Revisa tu conexión y recarga la página."));
-    });
+    slot.replaceChildren();
+    injectBoldButton(slot, p.bold);
   }
 
   /* ---------- Simulado ---------- */

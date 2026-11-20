@@ -240,7 +240,7 @@
         },
         "options": {
           "temperature": 0,
-          "maxTokens": 900,
+          "maxTokens": 1600,
           "timeout": 60000,
           "extraBody": "={{ ($env.LLM_MODEL || '').startsWith('qwen') ? '{\"enable_thinking\":false}' : '{}' }}"
         }
@@ -367,7 +367,7 @@
         300
       ],
       "parameters": {
-        "jsCode": "// ===== Guardrail de SALIDA =====\nconst req = $('Guardrail entrada').first().json;   // texto ORIGINAL del usuario (sin la descripción de la imagen)\nconst { imagen, ...reqSinImagen } = req;           // la imagen nunca se propaga al log\nconst r = $json;\nconst intencion = r.intencion;\nlet texto = String(r.respuesta ?? r.output ?? r.text ?? '').trim();\n// 1) nunca filtrar códigos de otros estudiantes ni correos\ntexto = texto.replace(/U\\d{8}/gi, m => m.toUpperCase() === req.codigoEstudiante ? m : '[código oculto]');\ntexto = texto.replace(/[\\w.+-]+@[\\w-]+\\.[\\w.]+/g, '[correo oculto]');\n// 2) no exponer detalles técnicos internos\nif (/(stack trace|traceback|psycopg|SQLSTATE|ECONNREFUSED|api[_ ]?key)/i.test(texto)) {\n  texto = 'Tuve un problema técnico consultando la información. Intenta de nuevo en unos minutos.';\n}\n// 3) longitud y vacío\nif (!texto) texto = 'No encontré información para responder eso. ¿Puedes reformular la pregunta?';\nif (texto.length > 2500) texto = texto.slice(0, 2500) + '…';\n// 4) datos de la imagen (solo si pasó por la rama de visión)\nlet imagenInfo = null;\nif (!req.bloqueado && req.tieneImagen) {\n  try { imagenInfo = $('Unir imagen').first().json.imagenInfo ?? null; } catch (e) { imagenInfo = null; }\n}\nreturn [{ json: {\n  ...reqSinImagen, intencion: req.bloqueado ? 'bloqueado' : (intencion || 'general'),\n  respuesta: texto, fuentes: r.fuentes ?? [], imagenInfo,\n}}];"
+        "jsCode": "// ===== Guardrail de SALIDA =====\nconst req = $('Guardrail entrada').first().json;   // texto ORIGINAL del usuario (sin la descripción de la imagen)\nconst { imagen, ...reqSinImagen } = req;           // la imagen nunca se propaga al log\nconst r = $json;\nconst intencion = r.intencion;\nlet texto = String(r.respuesta ?? r.output ?? r.text ?? '').trim();\n// 1) nunca filtrar códigos de otros estudiantes ni correos\ntexto = texto.replace(/U\\d{8}/gi, m => m.toUpperCase() === req.codigoEstudiante ? m : '[código oculto]');\ntexto = texto.replace(/[\\w.+-]+@[\\w-]+\\.[\\w.]+/g, '[correo oculto]');\n// 2) no exponer detalles técnicos internos\nif (/(stack trace|traceback|psycopg|SQLSTATE|ECONNREFUSED|api[_ ]?key)/i.test(texto)) {\n  texto = 'Tuve un problema técnico consultando la información. Intenta de nuevo en unos minutos.';\n}\n// 3) longitud y vacío\nif (!texto) texto = 'No encontré información para responder eso. ¿Puedes reformular la pregunta?';\nif (texto.length > 4000) texto = texto.slice(0, 4000) + '…';\n// 4) datos de la imagen (solo si pasó por la rama de visión)\nlet imagenInfo = null;\nif (!req.bloqueado && req.tieneImagen) {\n  try { imagenInfo = $('Unir imagen').first().json.imagenInfo ?? null; } catch (e) { imagenInfo = null; }\n}\nreturn [{ json: {\n  ...reqSinImagen, intencion: req.bloqueado ? 'bloqueado' : (intencion || 'general'),\n  respuesta: texto, fuentes: r.fuentes ?? [], imagenInfo,\n}}];"
       }
     },
     {

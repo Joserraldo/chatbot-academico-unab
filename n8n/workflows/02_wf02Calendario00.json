@@ -96,7 +96,7 @@
         },
         "options": {
           "temperature": 0.2,
-          "maxTokens": 900,
+          "maxTokens": 1600,
           "timeout": 60000,
           "extraBody": "={{ ($env.LLM_MODEL || '').startsWith('qwen') ? '{\"enable_thinking\":false}' : '{}' }}"
         }

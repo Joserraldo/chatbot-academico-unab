@@ -72,7 +72,7 @@ class W:
 def chat_model(w: W, name, pos, temperature=0.2):
     return w.node(name, "@n8n/n8n-nodes-langchain.lmChatOpenAi", 1.2,
                   {"model": {"__rl": True, "value": LLM_MODEL, "mode": "id"},
-                   "options": {"temperature": temperature, "maxTokens": 900, "timeout": 60000,
+                   "options": {"temperature": temperature, "maxTokens": 1600, "timeout": 60000,
                                "extraBody": "={{ ($env.LLM_MODEL || '').startsWith('qwen') ? '{\"enable_thinking\":false}' : '{}' }}"}},
                   pos, CRED["llm"])
 
@@ -275,7 +275,7 @@ if (/(stack trace|traceback|psycopg|SQLSTATE|ECONNREFUSED|api[_ ]?key)/i.test(te
 }
 // 3) longitud y vacío
 if (!texto) texto = 'No encontré información para responder eso. ¿Puedes reformular la pregunta?';
-if (texto.length > 2500) texto = texto.slice(0, 2500) + '…';
+if (texto.length > 4000) texto = texto.slice(0, 4000) + '…';
 // 4) datos de la imagen (solo si pasó por la rama de visión)
 let imagenInfo = null;
 if (!req.bloqueado && req.tieneImagen) {
@@ -369,7 +369,7 @@ def cursos():
     w.node("Agente académico", "@n8n/n8n-nodes-langchain.agent", 1.7, {
         "promptType": "define",
         "text": "=Código del estudiante autenticado: {{ $json.codigoEstudiante }}\nPregunta: {{ $json.mensaje }}",
-        "options": {"systemMessage": BASE_SYSTEM + " Usa las herramientas MCP SIEMPRE con el código del estudiante "
+        "options": {"systemMessage": BASE_SYSTEM + " Cita tareas, notas y fechas EXACTAMENTE como las devuelven las herramientas (nunca inventes títulos ni fechas). Usa las herramientas MCP SIEMPRE con el código del estudiante "
                     "autenticado (nunca otro). Guía: 'cuántos semestres me faltan' → proyeccion_semestres (explica el "
                     "supuesto); avance, promedio o matrícula → estado_academico; '¿cómo voy?', 'qué tengo pendiente' o un "
                     "resumen general → resumen_360; notas del periodo actual o de corte (Cosmos) → notas_periodo_actual "
@@ -450,7 +450,7 @@ def noticias():
                 "Hoy es {{ $now.toFormat('yyyy-MM-dd') }}.\nPregunta: {{ $json.mensaje }}\n"
                 "Responde solo con noticias de la lista. Prioriza las de las últimas 48 horas (di 'hoy' o 'ayer' cuando "
                 "aplique) y las categorías educacion, tecnologia e ingenieria_sistemas, además de cursos, convocatorias y "
-                "certificaciones. Para cada noticia incluye título, fuente, fecha y enlace."}, (660, 360))
+                "certificaciones. Máximo 5 noticias, una viñeta corta por noticia con título, fuente, fecha y enlace; cierra siempre las negritas y no dejes ítems a medias."}, (660, 360))
     chat_model(w, "LLM", (680, 580))
     w.link("LLM", "Resumir noticias", "ai_languageModel")
     w.node("Salida", "n8n-nodes-base.code", 2, {"jsCode":
