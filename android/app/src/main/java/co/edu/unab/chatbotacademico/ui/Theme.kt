@@ -7,8 +7,8 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
-val UnabOrange = Color(0xFFFFA300)
-val UnabPurple = Color(0xFF8A00E6)
+val UnabOrange = Color(0xFFFF9D00)
+val UnabPurple = Color(0xFF8600DD)
 
 private val Light = lightColorScheme(
     primary = UnabPurple, onPrimary = Color.White,

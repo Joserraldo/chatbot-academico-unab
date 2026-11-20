@@ -29,8 +29,20 @@ class MainActivity : ComponentActivity() {
                 Surface(Modifier.fillMaxSize()) {
                     when {
                         !st.loaded -> Box(Modifier.fillMaxSize(), Alignment.Center) { CircularProgressIndicator() }
-                        st.codigo == null -> LoginScreen(st.baseUrl, st.apiKey, vm::login)
-                        else -> ChatScreen(st, vm::send, vm::retry, vm::newConversation, vm::logout)
+                        st.codigo == null -> LoginScreen(st.baseUrl, st.apiKey, vm::personas, vm::login)
+                        else -> ChatScreen(
+                            st = st,
+                            onSend = vm::send,
+                            onRetry = vm::retry,
+                            onNew = vm::newConversation,
+                            onLogout = vm::logout,
+                            onAdjuntar = vm::adjuntarImagen,
+                            onQuitarAdjunto = vm::quitarImagen,
+                            onPago = vm::abrirPago,
+                            onCerrarPago = vm::cerrarPago,
+                            onConsultarPago = vm::consultarPago,
+                            cargarHoy = vm::hoy,
+                        )
                     }
                 }
             }
