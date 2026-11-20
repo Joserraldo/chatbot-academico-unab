@@ -7,6 +7,12 @@
 {$DOMAIN} {
 	encode gzip
 
+	# Interfaz web del chat y presentación: estáticas, servidas desde /srv/web (montada por docker-compose).
+	handle_path /app* {
+		root * /srv/web
+		file_server
+	}
+
 	# MCP server también disponible por HTTPS en /mcp (además del puerto 9000)
 	handle /mcp* {
 		reverse_proxy mcp-server:9000
