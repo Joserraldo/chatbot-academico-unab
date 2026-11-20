@@ -13,6 +13,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: unab
       APP_DB_PASSWORD: ${APP_DB_PASSWORD}
+      SERVICIOS_DB_PASSWORD: ${SERVICIOS_DB_PASSWORD}
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./db/init:/docker-entrypoint-initdb.d:ro
@@ -53,6 +54,8 @@ services:
       EMBED_MODEL: ${EMBED_MODEL}
       SHEETS_CSV_URL: ${SHEETS_CSV_URL:-}
       MCP_URL: http://mcp-server:9000/mcp
+      SERVICIOS_URL: http://servicios-api:8000
+      CHATBOT_KEY: ${CHATBOT_KEY}
     volumes:
       - n8n_data:/home/node/.n8n
       - ./data/docs_ccd:/files/docs_ccd:ro
@@ -77,6 +80,26 @@ services:
     ports:
       - "9000:9000"   # MCP Streamable HTTP (requisito del curso: puerto 9000 abierto en el Security Group)
 
+  servicios-api:
+    # v2: reservas, pagos (Bold), QR, gráficas, visión, panel "Hoy" y analítica (docs/CONTRATOS-V2.md)
+    build: ./servicios-api
+    restart: unless-stopped
+    depends_on:
+      postgres: { condition: service_healthy }
+    environment:
+      SERVICIOS_DATABASE_URL: postgresql://servicios_rw:${SERVICIOS_DB_PASSWORD}@postgres:5432/unab
+      CHATBOT_KEY: ${CHATBOT_KEY}
+      PUBLIC_BASE_URL: https://${DOMAIN}
+      LLM_BASE_URL: ${LLM_BASE_URL}
+      LLM_API_KEY: ${LLM_API_KEY}
+      VISION_MODEL: ${VISION_MODEL:-qwen3.8}
+      BOLD_API_KEY: ${BOLD_API_KEY:-}
+      BOLD_SECRET_KEY: ${BOLD_SECRET_KEY:-}
+      BOLD_WEBHOOK_SECRET: ${BOLD_WEBHOOK_SECRET:-}
+      BOLD_MODO: ${BOLD_MODO:-pruebas}
+      PAGOS_PERMITIR_SIMULADO: ${PAGOS_PERMITIR_SIMULADO:-true}
+      TZ: America/Bogota
+
   scraper:
     build: ./scraper
     restart: unless-stopped
@@ -89,7 +112,7 @@ services:
   caddy:
     image: caddy:2.10-alpine
     restart: unless-stopped
-    depends_on: [n8n]
+    depends_on: [n8n, servicios-api]
     environment:
       DOMAIN: ${DOMAIN}
       ACME_EMAIL: ${ACME_EMAIL}
@@ -98,6 +121,7 @@ services:
       - "443:443"
     volumes:
       - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./web:/srv/web:ro
       - caddy_data:/data
       - caddy_config:/config
 

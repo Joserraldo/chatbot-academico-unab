@@ -12,6 +12,18 @@
 		reverse_proxy mcp-server:9000
 	}
 
+	# v2: API de servicios (reservas, pagos Bold, QR, gráficas, visión, analítica)
+	handle /api/* {
+		reverse_proxy servicios-api:8000
+	}
+
+	# Chat web, checkout embebido, analítica y presentación
+	redir /app /app/ 308
+	handle_path /app/* {
+		root * /srv/web
+		file_server
+	}
+
 	# n8n: editor, webhooks (/webhook/chat) y API
 	handle {
 		reverse_proxy n8n:5678
