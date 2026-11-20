@@ -1,3 +1,14 @@
 <resources>
-    <style name="Theme.Chatbot" parent="android:Theme.Material.Light.NoActionBar" />
+    <color name="fondo_unab">#FFFBEE</color>
+
+    <style name="Theme.Chatbot.Base" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/fondo_unab</item>
+        <item name="android:statusBarColor">@color/fondo_unab</item>
+        <item name="android:navigationBarColor">@color/fondo_unab</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
+        <item name="android:colorAccent">#8600DD</item>
+    </style>
+
+    <style name="Theme.Chatbot" parent="Theme.Chatbot.Base" />
 </resources>

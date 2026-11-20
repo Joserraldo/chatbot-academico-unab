@@ -1,111 +1,37 @@
-# Asistente Académico UNAB — app Android
+# Asistente UNAB 360 para Android
 
-App nativa (Kotlin + Jetpack Compose + Material 3) que sirve de cliente del chatbot académico de la UNAB
-(proyecto de Ingeniería de Sistemas). Envía las preguntas del estudiante al webhook de n8n y muestra la respuesta.
+Cliente nativo en Kotlin y Jetpack Compose. El chat consume el webhook de n8n y el panel **Hoy en tu U** consulta la API de servicios. Los perfiles usan datos sintéticos y el checkout de la demo funciona en modo de pruebas.
 
-## Qué hace
+## Compilar en Windows
 
-- **Inicio**: el estudiante escribe su código (`^U\d{8}$`, p. ej. `U00000001`) y, opcionalmente, cambia la URL y la clave de acceso del servidor
-  (precargada con `BuildConfig.BASE_URL`). Los datos se guardan en DataStore privado de la aplicaci?n, incluida la clave en texto sin cifrar. El botón **Usar demo** llena `U00000001`.
-- **Chat**: burbujas usuario/bot, indicador "escribiendo…", chips de sugerencias rápidas, la intención como etiqueta
-  pequeña bajo la respuesta del bot y las fuentes si llegan. Render simple de `**negrita**` y listas con `- `.
-- **Errores**: mensaje amable y botón **Reintentar** (reenvía el último mensaje). Timeout de lectura de 90 s.
-- **Menú (⋮)**: *Nueva conversación* (genera un `sessionId` nuevo) y *Cerrar sesión*.
-- El historial visible vive solo en memoria; la memoria real de la conversación está en el servidor, por `sessionId`.
-  El `sessionId` (UUID) se persiste por instalación + estudiante.
-- Colores UNAB: naranja `#FFA300`, morado `#8A00E6` (tema claro y oscuro). Ícono adaptativo vectorial.
-
-## Configuración (`local.properties`)
-
-`local.properties` **no se versiona**. Además de `sdk.dir`, admite:
-
-```properties
-sdk.dir=C\:/Users/jose/AppData/Local/Android/Sdk
-chatbot.baseUrl=https://chatbotunab.duckdns.org
-chatbot.key=TU_CLAVE_X_CHATBOT_KEY
-```
-
-Valores por defecto: `chatbot.baseUrl=https://chatbotunab.duckdns.org`, `chatbot.key=` (vacía).
-Se exponen como `BuildConfig.BASE_URL` y `BuildConfig.CHATBOT_KEY`. Si cambias `local.properties` hay que recompilar.
-
-## Compilar (Git Bash)
-
-Requiere JDK 17+ (se usa el JBR de Android Studio) y Android SDK con plataforma 35.
+Requiere JDK 17 y la plataforma Android SDK 35. En Git Bash, desde la raíz del proyecto:
 
 ```bash
-cd "/d/José Tellez/Documents/universidad/sexto semestre/ciencia de datos/chatbot-academico-unab/android"
+cd android
 export JAVA_HOME="/c/Program Files/Android/Android Studio/jbr"
-./gradlew assembleDebug
+./gradlew.bat assembleDebug testDebugUnitTest
 ```
 
-El APK queda en:
-
-```
-app/build/outputs/apk/debug/app-debug.apk
-```
-
-Nota: la ruta del proyecto tiene tilde (`José`), por eso `gradle.properties` incluye `android.overridePathCheck=true`.
-
-Instalar en un dispositivo/emulador conectado:
+Configura `sdk.dir=C:/Users/jose/AppData/Local/Android/Sdk` en `local.properties` si Gradle no encuentra el SDK. El APK queda en `app/build/outputs/apk/debug/app-debug.apk`. Para instalarlo en un emulador o teléfono conectado:
 
 ```bash
 ~/AppData/Local/Android/Sdk/platform-tools/adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
-## Probar
+## Probar la demo
 
-**Contra el emulador (backend local en tu PC):** el emulador ve el host como `10.0.2.2`. En `local.properties`:
+1. En **Probar como…**, elige un perfil e introduce la clave de acceso del equipo en la app.
+2. Con **Valentina · Medicina**, toca **Mis notas en gráfica** y abre **Hoy** para consultar el promedio, el riesgo y las tareas.
+3. Con **Nicolás · Mecatrónica**, abre **Hoy → Préstamos → ¿Cómo renuevo?** para consultar el trámite y su QR.
+4. Con **Andrés Felipe · Administración**, envía **Pagar matrícula** y abre **Pagar con Bold**. Usa el checkout de pruebas. Al volver, el chat consulta el estado de la orden.
+5. Adjunta una imagen desde el clip y verifica la miniatura antes de enviar. Si el dispositivo ofrece reconocimiento de voz, el micrófono permite dictar la pregunta en español de Colombia.
 
-```properties
-chatbot.baseUrl=http://10.0.2.2:5678
-```
+La URL por defecto es `https://chatbotunab.duckdns.org`. Para usar otro servidor cambia **Opciones avanzadas → URL del servidor**. Desde el emulador, `http://10.0.2.2:<puerto>` apunta al equipo anfitrión.
 
-o cambia la URL en la pantalla de inicio. El tráfico en claro (`http`) solo se permite para `10.0.2.2` y `localhost`
-(`res/xml/network_security_config.xml`); cualquier otro host exige HTTPS.
+El menú del chat permite iniciar una conversación nueva o cerrar sesión. Android conserva el código, la URL, la clave ingresada y el identificador de sesión en el almacenamiento privado de la aplicación. El historial visible se mantiene en memoria.
 
-**Contra el servidor desplegado:** deja `chatbot.baseUrl=https://chatbotunab.duckdns.org` e introduce la clave real en el campo **Clave de acceso** de la pantalla de inicio, o config?rala en
-`chatbot.key` para incorporarla en la compilaci?n. Entra con `U00000001` (demo) o un código real.
+## Código
 
-Prueba rápida del contrato sin la app:
-
-```bash
-curl -X POST "https://chatbotunab.duckdns.org/webhook/chat" -H "Content-Type: application/json" -H "X-Chatbot-Key: TU_CLAVE" -d '{"sessionId":"test-1","codigoEstudiante":"U00000001","mensaje":"¿Cuántos semestres me faltan?"}'
-```
-
-## Contrato del API
-
-`POST {BASE_URL}/webhook/chat`
-
-Headers: `Content-Type: application/json`, `X-Chatbot-Key: {API_KEY}`
-
-Petición:
-
-```json
-{"sessionId": "<uuid por instalación+estudiante>", "codigoEstudiante": "U00XXXXXX", "mensaje": "<texto>"}
-```
-
-Respuesta 200:
-
-```json
-{"respuesta": "<markdown sencillo>", "intencion": "general|calendario|historial|noticias|ruta|bloqueado", "fuentes": ["..."]}
-```
-
-`intencion` y `fuentes` pueden faltar; los campos desconocidos se ignoran. Cualquier código no 2xx, fallo de red o
-timeout (lectura 90 s) muestra un mensaje amable con botón Reintentar.
-
-## Estructura
-
-- `app/build.gradle.kts`: lee `local.properties`, define `BuildConfig`, dependencias (Compose BOM, OkHttp, kotlinx.serialization, DataStore).
-- `data/ChatApi.kt`: cliente OkHttp + modelos serializables. `data/Prefs.kt`: DataStore (código, URL, sessionId por estudiante).
-- `ChatViewModel.kt`: estado (`StateFlow<UiState>`), envío, reintento, nueva conversación, cierre de sesión.
-- `ui/`: `LoginScreen`, `ChatScreen`, `Markdown` (negrita/listas), `Theme` (colores UNAB).
-
-## Versiones
-
-Gradle 8.10.2 · AGP 8.7.3 · Kotlin 2.1.0 · Compose BOM 2024.12.01 · compileSdk/targetSdk 35 · minSdk 26.
-
-## Decisiones
-
-- OkHttp directo (sin Retrofit/Ktor) por simplicidad: un solo endpoint.
-- Sin librería de markdown: un parser mínimo de negrita y viñetas basta para las respuestas del bot.
-- La clave `X-Chatbot-Key` puede introducirse en la aplicaci?n o incorporarse al APK mediante BuildConfig. La primera opci?n evita distribuirla en el APK, pero se guarda sin cifrar en el almacenamiento privado de la aplicaci?n. Ninguna de las dos sustituye la autenticaci?n de producci?n.
+- `ui/Theme.kt` define los colores y la tipografía UNAB. `ui/componentes/` contiene las superficies, las burbujas y el compositor.
+- `ChatViewModel.kt` mantiene el estado y los flujos de chat, imagen y pago. `data/ChatApi.kt` implementa el cliente HTTP.
+- `testDebugUnitTest` verifica la compatibilidad del chat v1/v2, los adjuntos, el checkout y los datos de Hoy. Las rutas y formatos están en [Contratos v2](../docs/CONTRATOS-V2.md).

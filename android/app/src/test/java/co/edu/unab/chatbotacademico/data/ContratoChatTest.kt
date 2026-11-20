@@ -1,5 +1,6 @@
 package co.edu.unab.chatbotacademico.data
 
+import kotlinx.serialization.json.Json
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -7,6 +8,29 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class ContratoChatTest {
+    @Test
+    fun cargaLosDatosDeHoyYAdmiteCamposOpcionalesAusentes() {
+        val json = Json { ignoreUnknownKeys = true }
+        val agenda = json.decodeFromString<Hoy>(
+            """
+            {
+              "estudiante": {"nombre":"Valentina","programa":"Medicina","semestre_actual":4,
+                             "promedio":null,"porcentaje_avance":41.5,"estado_matricula":"activa"},
+              "horario_hoy": [{"curso":"Fisiología","horario":"Jue 07:00-09:00","salon":"Aula 205","docente":"Lucía"}],
+              "riesgo": {"nivel":"alto","probabilidad":0.79,"factores":[]},
+              "noticias":[{"titulo":"Semillero","url":"https://unab.edu.co/","fuente":"UNAB","fecha":"2026-11-19"}]
+            }
+            """.trimIndent(),
+        )
+        assertEquals(4, agenda.estudiante?.semestre)
+        assertNull(agenda.estudiante?.promedio)
+        assertEquals(41.5, agenda.estudiante?.avance)
+        assertEquals("Aula 205", agenda.horario.single().salon)
+        assertEquals("alto", agenda.riesgo?.nivel)
+        assertEquals("2026-11-19", agenda.noticias.single().fecha)
+        assertEquals(Hoy(), json.decodeFromString<Hoy>("{}"))
+    }
+
     @Test
     fun conservaLaRespuestaV1YOmiteElAdjuntoAusente() {
         val respuesta = decodeChatResponse("""{"respuesta":"Hola","intencion":"historial","fuentes":["Cosmos"]}""")

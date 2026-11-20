@@ -1,87 +1,66 @@
 package co.edu.unab.chatbotacademico.ui
 
 import android.net.Uri
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.PickVisualMediaRequest
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import co.edu.unab.chatbotacademico.Msg
 import co.edu.unab.chatbotacademico.R
 import co.edu.unab.chatbotacademico.UiState
+import co.edu.unab.chatbotacademico.data.ChatApiException
 import co.edu.unab.chatbotacademico.data.Hoy
 import co.edu.unab.chatbotacademico.data.checkoutUrl
+import co.edu.unab.chatbotacademico.data.personasRespaldo
+import co.edu.unab.chatbotacademico.ui.componentes.AvatarUnab
+import co.edu.unab.chatbotacademico.ui.componentes.BienvenidaChat
+import co.edu.unab.chatbotacademico.ui.componentes.Composer
+import co.edu.unab.chatbotacademico.ui.componentes.Escribiendo
+import co.edu.unab.chatbotacademico.ui.componentes.Insignia
+import co.edu.unab.chatbotacademico.ui.componentes.MensajeChat
+import co.edu.unab.chatbotacademico.ui.componentes.TarjetaRespuesta
+import kotlinx.coroutines.CancellationException
 
-private val SUGERENCIAS = listOf(
-    "¿Cómo voy este semestre?",
-    "Muéstrame mis notas en gráfica",
-    "¿Qué tareas tengo en TEMA?",
-    "Quiero pagar mi matrícula",
-    "Reservar una sala de estudio mañana a las 10",
-    "¿Cómo renuevo un libro de biblioteca?",
-    "¿Cuál es mi riesgo académico?",
-    "Noticias de tecnología de hoy",
-    "¿Cómo va mi avance en el plan?",
-    "¿Qué cursos de competencias digitales he tomado?",
-    "¿Cuándo son las inscripciones?",
-    "¿Qué es la insignia de competencias digitales?",
-    "Novedades y convocatorias",
-    "¿Cuántos semestres me faltan?",
-    "¿Qué me recomiendas para el próximo semestre?",
-)
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatScreen(
     st: UiState,
@@ -96,19 +75,24 @@ fun ChatScreen(
     onConsultarPago: (String) -> Unit,
     cargarHoy: suspend () -> Hoy,
 ) {
-    var menu by remember { mutableStateOf(false) }
-    var input by rememberSaveable { mutableStateOf("") }
-    var verHoy by rememberSaveable { mutableStateOf(false) }
+    var input by rememberSaveable(st.codigo) { mutableStateOf("") }
+    var verHoy by rememberSaveable(st.codigo) { mutableStateOf(false) }
+    var intentoAgenda by remember(st.codigo) { mutableIntStateOf(0) }
+    var agenda by remember(st.codigo) { mutableStateOf<Hoy?>(null) }
+    var errorAgenda by remember(st.codigo) { mutableStateOf<String?>(null) }
     val listState = rememberLazyListState()
-    val photoPicker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-        uri?.let(onAdjuntar)
-    }
+    val animados = remember { mutableSetOf<Long>() }
     val enviarSugerencia: (String) -> Unit = { onSend(it, false) }
-    val puedeEnviar = !st.typing && !st.preparandoImagen && (input.isNotBlank() || st.adjunto != null)
-    val enviar = {
-        if (puedeEnviar) {
-            onSend(input, true)
-            input = ""
+
+    LaunchedEffect(st.codigo, st.baseUrl, intentoAgenda) {
+        errorAgenda = null
+        agenda = try {
+            cargarHoy()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            errorAgenda = (e as? ChatApiException)?.message ?: "No se pudo cargar tu agenda. Revisa la conexión."
+            null
         }
     }
 
@@ -117,186 +101,124 @@ fun ChatScreen(
         PantallaPago(pagoUrl, onCerrarPago)
         return
     }
-    if (verHoy) {
-        PantallaHoy(cargarHoy, st.pagos, onPago, onConsultarPago) { verHoy = false }
-        return
-    }
+
+    val perfil = personasRespaldo.firstOrNull { it.codigo == st.codigo }
+    val estudiante = agenda?.estudiante
+    val nombre = estudiante?.nombre?.let { completo ->
+        perfil?.nombre?.takeIf { completo == it || completo.startsWith("$it ") }
+            ?: completo.substringBefore(' ')
+    } ?: perfil?.nombre
+    val programa = estudiante?.programa ?: perfil?.programa
+    val identidad = listOfNotNull(nombre, programa).joinToString(" · ").ifEmpty { st.codigo.orEmpty() }
 
     LaunchedEffect(st.messages.size, st.typing, st.error) {
-        val extra = (if (st.typing) 1 else 0) + (if (st.error != null) 1 else 0)
-        val total = st.messages.size + extra
+        val total = st.messages.size + (if (st.typing) 1 else 0) + (if (st.error != null) 1 else 0)
         if (total > 0) listState.animateScrollToItem(total - 1)
     }
 
     Scaffold(
+        modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal)),
+        containerColor = Color.Transparent,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
-            TopAppBar(
-                title = {
-                    Column {
-                        Text("Asistente UNAB 360", style = MaterialTheme.typography.titleMedium, maxLines = 1)
-                        Text(st.codigo.orEmpty(), style = MaterialTheme.typography.labelSmall)
-                    }
+            BarraChat(
+                identidad,
+                onHoy = {
+                    if (agenda != null || errorAgenda != null) intentoAgenda++
+                    verHoy = true
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary,
-                ),
-                actions = {
-                    TextButton(onClick = { verHoy = true }) {
-                        Text("Hoy en tu U", color = MaterialTheme.colorScheme.onPrimary)
-                    }
-                    IconButton(onClick = { menu = true }) { Icon(Icons.Default.MoreVert, "Menú") }
-                    DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
-                        DropdownMenuItem(text = { Text("Nueva conversación") },
-                            onClick = { menu = false; input = ""; onNew() })
-                        DropdownMenuItem(text = { Text("Cerrar sesión") },
-                            onClick = { menu = false; onLogout() })
-                    }
-                },
+                onNew = { input = ""; animados.clear(); onNew() },
+                onLogout = onLogout,
             )
         },
         bottomBar = {
-            Column(Modifier.background(MaterialTheme.colorScheme.surface).imePadding()) {
-                LazyRow(
-                    contentPadding = PaddingValues(horizontal = 12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    items(SUGERENCIAS) { s ->
-                        AssistChip(onClick = { enviarSugerencia(s) }, label = { Text(s) }, enabled = !st.typing)
-                    }
-                }
-                if (st.adjunto != null || st.preparandoImagen) {
-                    Row(
-                        Modifier.fillMaxWidth().padding(horizontal = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        st.adjunto?.let {
-                            Image(
-                                it.miniatura.asImageBitmap(), "Vista previa del adjunto",
-                                Modifier.size(48.dp).clip(RoundedCornerShape(8.dp)), contentScale = ContentScale.Crop,
-                            )
-                        }
-                        if (st.preparandoImagen) CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
-                        Text(
-                            if (st.preparandoImagen) "Preparando imagen…" else "Imagen adjunta",
-                            Modifier.weight(1f), style = MaterialTheme.typography.labelMedium,
-                        )
-                        TextButton(onClick = onQuitarAdjunto) { Text("Quitar") }
-                    }
-                }
-                st.errorImagen?.let {
-                    Text(it, Modifier.padding(horizontal = 12.dp), color = MaterialTheme.colorScheme.error)
-                }
-                Row(
-                    Modifier.fillMaxWidth().padding(8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    IconButton(
-                        onClick = { photoPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
-                        enabled = !st.typing && !st.preparandoImagen,
-                    ) { Icon(painterResource(R.drawable.ic_adjuntar), "Adjuntar imagen") }
-                    OutlinedTextField(
-                        value = input,
-                        onValueChange = { input = it },
-                        placeholder = { Text("Escribe tu pregunta…") },
-                        modifier = Modifier.weight(1f),
-                        maxLines = 4,
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
-                        keyboardActions = KeyboardActions(onSend = { enviar() }),
-                        shape = RoundedCornerShape(24.dp),
-                    )
-                    IconButton(
-                        onClick = enviar,
-                        enabled = puedeEnviar,
-                    ) { Icon(Icons.AutoMirrored.Filled.Send, "Enviar") }
-                }
+            Composer(st, input, { input = it }, onAdjuntar, onQuitarAdjunto) {
+                onSend(input, true)
+                input = ""
             }
         },
-    ) { pad ->
-        LazyColumn(
-            state = listState,
-            modifier = Modifier.fillMaxSize().padding(pad),
-            contentPadding = PaddingValues(12.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            if (st.messages.isEmpty() && !st.typing) {
-                item {
-                    TarjetaRespuesta {
-                        Text("¿Qué quieres consultar?", style = MaterialTheme.typography.headlineSmall)
-                        Text("Revisa tus notas, resuelve un trámite o adjunta una foto para analizarla.")
+    ) { padding ->
+        Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.TopCenter) {
+            LazyColumn(
+                state = listState,
+                modifier = Modifier.widthIn(max = 660.dp).fillMaxSize(),
+                contentPadding = PaddingValues(start = 14.dp, top = 16.dp, end = 14.dp, bottom = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp),
+            ) {
+                if (st.messages.isEmpty() && !st.typing) {
+                    item { BienvenidaChat(nombre, enviarSugerencia) }
+                }
+                items(st.messages, key = { it.id }) { mensaje ->
+                    MensajeChat(mensaje, animados) {
+                        mensaje.acciones.forEach {
+                            TarjetaAccion(it, st.baseUrl, st.pagos, st.typing, enviarSugerencia, onPago, onConsultarPago)
+                        }
+                        mensaje.graficas.forEach { GraficaChat(it) }
+                        mensaje.qrDetectados.filter { it.isNotBlank() }.distinct().forEach { QrDetectado(it) }
                     }
                 }
-            }
-            items(st.messages, key = { it.id }) { mensaje ->
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Bubble(mensaje)
-                    mensaje.acciones.forEach {
-                        TarjetaAccion(it, st.baseUrl, st.pagos, st.typing, enviarSugerencia, onPago, onConsultarPago)
-                    }
-                    mensaje.graficas.forEach { GraficaChat(it) }
-                    mensaje.qrDetectados.filter { it.isNotBlank() }.distinct().forEach { QrDetectado(it) }
-                }
-            }
-            if (st.typing) item {
-                Row(Modifier.padding(6.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                    CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
-                    Text("Consultando…", style = MaterialTheme.typography.bodySmall)
-                }
-            }
-            st.error?.let { err ->
-                item {
-                    Column(
-                        Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp))
-                            .background(MaterialTheme.colorScheme.errorContainer).padding(12.dp),
-                    ) {
-                        Text(err, color = MaterialTheme.colorScheme.onErrorContainer)
-                        TextButton(onClick = onRetry) { Text("Reintentar") }
+                if (st.typing) item { Escribiendo() }
+                st.error?.let { error ->
+                    item {
+                        TarjetaRespuesta(color = PeligroSuave) {
+                            Text(error, color = Peligro, style = MaterialTheme.typography.bodyMedium)
+                            TextButton(onClick = onRetry) { Text("Reintentar") }
+                        }
                     }
                 }
             }
         }
+    }
+
+    if (verHoy) {
+        PanelHoy(
+            agenda = agenda,
+            error = errorAgenda,
+            ocupado = st.typing,
+            pagos = st.pagos,
+            onPago = onPago,
+            onConsultarPago = onConsultarPago,
+            reintentar = { intentoAgenda++ },
+            renovar = {
+                verHoy = false
+                enviarSugerencia("¿Cómo renuevo mi préstamo de biblioteca?")
+            },
+            cerrar = { verHoy = false },
+        )
     }
 }
 
 @Composable
-private fun Bubble(m: Msg) {
-    val cs = MaterialTheme.colorScheme
-    val bg = if (m.fromUser) cs.primary else cs.secondaryContainer
-    val fg = if (m.fromUser) cs.onPrimary else cs.onSecondaryContainer
-    Column(
-        Modifier.fillMaxWidth(),
-        horizontalAlignment = if (m.fromUser) Alignment.End else Alignment.Start,
-    ) {
-        if (m.text.isNotBlank() || m.miniatura != null) {
-            Column(
-                Modifier.widthIn(max = 340.dp).clip(RoundedCornerShape(16.dp)).background(bg).padding(12.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                m.miniatura?.let {
-                    Image(
-                        it.asImageBitmap(), "Imagen enviada",
-                        Modifier.widthIn(max = 180.dp).heightIn(max = 150.dp).clip(RoundedCornerShape(10.dp)),
-                    )
+private fun BarraChat(identidad: String, onHoy: () -> Unit, onNew: () -> Unit, onLogout: () -> Unit) {
+    var menu by remember { mutableStateOf(false) }
+    Column(Modifier.fillMaxWidth().background(Superficie.copy(alpha = 0.86f)).statusBarsPadding()) {
+        Row(
+            Modifier.fillMaxWidth().padding(start = 14.dp, end = 2.dp, top = 8.dp, bottom = 10.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            AvatarUnab(Modifier.size(36.dp))
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                Text("Asistente UNAB 360", style = MaterialTheme.typography.titleMedium)
+                Insignia(identidad)
+            }
+            TextButton(onHoy, shape = CircleShape, contentPadding = PaddingValues(horizontal = 8.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Icon(painterResource(R.drawable.ic_calendario), null, Modifier.size(17.dp))
+                    Text("Hoy", style = MaterialTheme.typography.labelLarge)
                 }
-                if (m.fromUser) Text(m.text, color = fg) else Text(renderMarkdown(m.text), color = fg)
+            }
+            Box {
+                IconButton(onClick = { menu = true }) { Icon(Icons.Default.MoreVert, "Menú de conversación") }
+                DropdownMenu(
+                    expanded = menu, onDismissRequest = { menu = false },
+                    shape = FormaTarjeta, containerColor = Superficie,
+                ) {
+                    DropdownMenuItem(text = { Text("Nueva conversación") }, onClick = { menu = false; onNew() })
+                    DropdownMenuItem(text = { Text("Cerrar sesión") }, onClick = { menu = false; onLogout() })
+                }
             }
         }
-        if (!m.fromUser) {
-            m.intencion?.let {
-                Text(nombreEstado(it), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(start = 6.dp, top = 2.dp))
-            }
-            if (m.fuentes.isNotEmpty()) {
-                Text(
-                    "Fuentes: " + m.fuentes.joinToString(" · "),
-                    style = MaterialTheme.typography.labelSmall,
-                    fontStyle = FontStyle.Italic,
-                    modifier = Modifier.padding(start = 6.dp).widthIn(max = 320.dp),
-                )
-            }
-        }
+        HorizontalDivider(color = Borde)
     }
 }
-
