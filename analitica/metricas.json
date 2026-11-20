@@ -1,0 +1,237 @@
+{
+  "datos": "100 % sintéticos",
+  "semilla_aleatoria": 42,
+  "semilla_v2": true,
+  "ultimo_periodo_observado": "2025-2",
+  "fecha_variables_entrenamiento": "2025-12-05",
+  "periodo_etiqueta": "2026-1",
+  "periodo_puntuacion": "2026-2",
+  "fecha_puntuacion": "2026-11-19",
+  "etiqueta": "Al menos un curso reprobado o promedio ponderado inferior a 3,3.",
+  "distribucion_etiqueta": {
+    "sin_riesgo": 85,
+    "en_riesgo": 96
+  },
+  "correlaciones_pearson": {
+    "promedio": {
+      "promedio": 1.0,
+      "tendencia": -0.175533,
+      "reprobados": -0.698338,
+      "creditos_periodo": 0.685215,
+      "brecha": -0.764451,
+      "diagnostico": 0.023458,
+      "cursos_ccd": -0.007119,
+      "riesgo": -0.606371
+    },
+    "tendencia": {
+      "promedio": -0.175533,
+      "tendencia": 1.0,
+      "reprobados": 0.085538,
+      "creditos_periodo": -0.093559,
+      "brecha": 0.058167,
+      "diagnostico": -0.011109,
+      "cursos_ccd": -0.052602,
+      "riesgo": 0.007453
+    },
+    "reprobados": {
+      "promedio": -0.698338,
+      "tendencia": 0.085538,
+      "reprobados": 1.0,
+      "creditos_periodo": -0.472207,
+      "brecha": 0.856559,
+      "diagnostico": -0.144966,
+      "cursos_ccd": 0.006599,
+      "riesgo": 0.378961
+    },
+    "creditos_periodo": {
+      "promedio": 0.685215,
+      "tendencia": -0.093559,
+      "reprobados": -0.472207,
+      "creditos_periodo": 1.0,
+      "brecha": -0.781195,
+      "diagnostico": 0.043381,
+      "cursos_ccd": 0.031839,
+      "riesgo": -0.419653
+    },
+    "brecha": {
+      "promedio": -0.764451,
+      "tendencia": 0.058167,
+      "reprobados": 0.856559,
+      "creditos_periodo": -0.781195,
+      "brecha": 1.0,
+      "diagnostico": -0.131971,
+      "cursos_ccd": -0.019204,
+      "riesgo": 0.42515
+    },
+    "diagnostico": {
+      "promedio": 0.023458,
+      "tendencia": -0.011109,
+      "reprobados": -0.144966,
+      "creditos_periodo": 0.043381,
+      "brecha": -0.131971,
+      "diagnostico": 1.0,
+      "cursos_ccd": 0.017322,
+      "riesgo": 0.138829
+    },
+    "cursos_ccd": {
+      "promedio": -0.007119,
+      "tendencia": -0.052602,
+      "reprobados": 0.006599,
+      "creditos_periodo": 0.031839,
+      "brecha": -0.019204,
+      "diagnostico": 0.017322,
+      "cursos_ccd": 1.0,
+      "riesgo": 0.024592
+    },
+    "riesgo": {
+      "promedio": -0.606371,
+      "tendencia": 0.007453,
+      "reprobados": 0.378961,
+      "creditos_periodo": -0.419653,
+      "brecha": 0.42515,
+      "diagnostico": 0.138829,
+      "cursos_ccd": 0.024592,
+      "riesgo": 1.0
+    }
+  },
+  "observaciones_por_variable": {
+    "promedio": {
+      "historico": 155,
+      "puntuacion": 181,
+      "valores_distintos_entrenamiento": 115
+    },
+    "tendencia": {
+      "historico": 137,
+      "puntuacion": 155,
+      "valores_distintos_entrenamiento": 108
+    },
+    "reprobados": {
+      "historico": 181,
+      "puntuacion": 206,
+      "valores_distintos_entrenamiento": 21
+    },
+    "creditos_periodo": {
+      "historico": 155,
+      "puntuacion": 181,
+      "valores_distintos_entrenamiento": 37
+    },
+    "brecha": {
+      "historico": 181,
+      "puntuacion": 206,
+      "valores_distintos_entrenamiento": 18
+    },
+    "diagnostico": {
+      "historico": 155,
+      "puntuacion": 206,
+      "valores_distintos_entrenamiento": 50
+    },
+    "cursos_ccd": {
+      "historico": 181,
+      "puntuacion": 206,
+      "valores_distintos_entrenamiento": 5
+    },
+    "matricula": {
+      "historico": 181,
+      "puntuacion": 206,
+      "valores_distintos_entrenamiento": 2
+    }
+  },
+  "n_train": 135,
+  "n_test": 46,
+  "n_puntuados": 206,
+  "niveles": {
+    "bajo": 84,
+    "medio": 36,
+    "alto": 86
+  },
+  "modelo_elegido": "Regresión logística",
+  "modelos": {
+    "Regresión logística": {
+      "auc_cv_folds": [
+        0.8846153846153846,
+        0.8928571428571428,
+        0.8516483516483517,
+        0.7833333333333333,
+        0.8749999999999999
+      ],
+      "auc_cv_media": 0.8574908424908424,
+      "auc_cv_desviacion": 0.03956401761054243,
+      "auc": 0.7698863636363636,
+      "f1": 0.7346938775510204,
+      "accuracy": 0.717391304347826,
+      "matriz": [
+        [
+          15,
+          7
+        ],
+        [
+          6,
+          18
+        ]
+      ]
+    },
+    "Bosque aleatorio": {
+      "auc_cv_folds": [
+        0.8516483516483516,
+        0.8983516483516484,
+        0.8131868131868132,
+        0.8333333333333334,
+        0.8972222222222223
+      ],
+      "auc_cv_media": 0.8587484737484739,
+      "auc_cv_desviacion": 0.03411992605374379,
+      "auc": 0.7433712121212122,
+      "f1": 0.68,
+      "accuracy": 0.6521739130434783,
+      "matriz": [
+        [
+          13,
+          9
+        ],
+        [
+          7,
+          17
+        ]
+      ]
+    }
+  },
+  "metodo_importancias": "Coeficientes logísticos",
+  "importancias": [
+    {
+      "factor": "Brecha frente a los créditos esperados",
+      "importancia": 1.6291086335292124
+    },
+    {
+      "factor": "Promedio acumulado",
+      "importancia": -1.0731420240954166
+    },
+    {
+      "factor": "Cursos reprobados previos",
+      "importancia": 1.0064544321306208
+    },
+    {
+      "factor": "Matrícula matriculado",
+      "importancia": -0.5341150250423876
+    },
+    {
+      "factor": "Matrícula sin matrícula registrada",
+      "importancia": 0.5337923775341177
+    },
+    {
+      "factor": "Puntaje en la prueba diagnóstica del CCD",
+      "importancia": 0.4863529565068302
+    },
+    {
+      "factor": "Tendencia del promedio",
+      "importancia": -0.0772820692781388
+    },
+    {
+      "factor": "Créditos aprobados por periodo cursado",
+      "importancia": 0.017729750062139775
+    },
+    {
+      "factor": "Cursos del CCD aprobados",
+      "importancia": 0.006970309832883376
+    }
+  ]
+}
