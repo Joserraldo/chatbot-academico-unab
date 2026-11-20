@@ -88,6 +88,20 @@ Registro cronológico de decisiones, avances y problemas. Formato: fecha · resp
 
 ---
 
+## 2026-11-20 · José Téllez — Videos, pago de Bold en Android y guía de recorrido
+**Hecho**
+- Videos entregados: [demo funcional (4:28)](https://youtu.be/iAiiowTgKYs) y [tráiler (1:10)](https://youtu.be/e0BDTLoeVEg). Se grabaron con Playwright (web) y con el emulador (Android) y se montaron en HyperFrames. Voz y música de ElevenLabs, a −14 LUFS. Producción en [docs/VIDEOS.md](docs/VIDEOS.md) y guiones en [docs/GUIONES-ELEVENLABS.md](docs/GUIONES-ELEVENLABS.md).
+- Corregido el pago con Bold dentro de la app Android (`web/pagar.html`). APK 2.2 publicado en `web/descargas/`.
+- [docs/GUIA-RECORRIDO.md](docs/GUIA-RECORRIDO.md): recorrido en vivo para la sustentación.
+
+**Problemas / decisiones**
+- **Bold en el WebView:** el checkout embebido cargaba (por CDP se vio el iframe y la API de Bold respondiendo 200) pero quedaba invisible. En el WebView de la app las unidades `vh`/`dvh` miden 0, y el modal de Bold usa `height: 100vh` dentro de un shadow root cerrado, así que no se puede corregir con CSS. Solución: si el UA trae `; wv)`, se usa `data-render-mode="redirect"`. Se verificó de punta a punta en el emulador: checkout, pago aprobado y regreso a `pagar.html`. No hace falta recompilar la app; el APK 2.2 solo sube la versión.
+- **Voz de ElevenLabs:** salió sin las pausas largas, así que se cortó por palabras con una transcripción de Whisper en lugar de por silencios.
+
+**Evidencias:** videos en YouTube (no listados); grabaciones crudas en `videos/raw/` (no versionadas).
+
+---
+
 <!-- Plantilla para nuevas entradas
 ## AAAA-MM-DD · Nombre — Título
 **Hecho**

@@ -266,7 +266,12 @@
     s.setAttribute("data-integrity-signature", b.integritySignature);
     s.setAttribute("data-description", String(b.description || "Pago UNAB").slice(0, 100));
     s.setAttribute("data-redirection-url", b.redirectionUrl);
-    s.setAttribute("data-render-mode", "embedded");
+    /* En el WebView de la app Android las unidades vh/dvh valen 0, así que el modal embebido
+       de Bold queda con alto 0 e invisible (su shadow root es cerrado y no se puede corregir con CSS).
+       Ahí se usa redirect: la página entera va a checkout.bold.co y vuelve a data-redirection-url,
+       donde el polling de este archivo muestra el resultado. El UA del WebView de Android lleva "; wv)". */
+    var enWebView = /; wv\)/.test(navigator.userAgent);
+    s.setAttribute("data-render-mode", enWebView ? "redirect" : "embedded");
     /* La librería de Bold lee los data-* de su propio <script>: debe llevar el src. */
     s.src = BOLD_LIB;
     s.async = true;

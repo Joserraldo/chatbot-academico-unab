@@ -8,7 +8,7 @@
 
 Ciencia de Datos · Trabajo final · Ingeniería de Sistemas · Universidad Autónoma de Bucaramanga
 
-[**✅ Cómo cumplimos el enunciado**](#-cumplimiento-del-enunciado-tema-2) · [**Probar la demo**](https://chatbotunab.duckdns.org/app/) · [Dashboard de analítica](https://chatbotunab.duckdns.org/app/analitica/) · [Presentación](https://chatbotunab.duckdns.org/app/presentacion/) · [Manual de usuario](docs/MANUAL-USUARIO.md) · [**Descargar APK Android**](https://chatbotunab.duckdns.org/app/descargas/asistente-unab-360.apk) · [App Android](android/README.md)
+[**✅ Cómo cumplimos el enunciado**](#-cumplimiento-del-enunciado-tema-2) · [**Probar la demo**](https://chatbotunab.duckdns.org/app/) · [Dashboard de analítica](https://chatbotunab.duckdns.org/app/analitica/) · [Presentación](https://chatbotunab.duckdns.org/app/presentacion/) · [Manual de usuario](docs/MANUAL-USUARIO.md) · [**🎬 Video demo**](https://youtu.be/iAiiowTgKYs) · [Tráiler](https://youtu.be/e0BDTLoeVEg) · [**Descargar APK Android**](https://chatbotunab.duckdns.org/app/descargas/asistente-unab-360.apk) · [App Android](android/README.md)
 
 </div>
 
@@ -31,7 +31,9 @@ Ciencia de Datos · Trabajo final · Ingeniería de Sistemas · Universidad Aut�
 | Qué | Enlace |
 |---|---|
 | 💬 Chat web (el asistente) | <https://chatbotunab.duckdns.org/app/> (la raíz del dominio también redirige aquí) |
-| 📱 App Android (APK 2.1) | <https://chatbotunab.duckdns.org/app/descargas/asistente-unab-360.apk> |
+| 🎬 Video de demostración (4:28) | <https://youtu.be/iAiiowTgKYs> |
+| 🎞️ Tráiler Asistente UNAB 360 (1:10) | <https://youtu.be/e0BDTLoeVEg> |
+| 📱 App Android (APK 2.2) | <https://chatbotunab.duckdns.org/app/descargas/asistente-unab-360.apk> |
 | ⚙️ Editor de n8n (workflows) | <https://chatbotunab.duckdns.org/home/workflows> (pide la cuenta del equipo) |
 | 🔌 Webhook del chat | `POST https://chatbotunab.duckdns.org/webhook/chat` |
 | 🧰 Servidor MCP (18 herramientas) | `https://chatbotunab.duckdns.org/mcp` (Bearer token) |
@@ -70,7 +72,7 @@ Ciencia de Datos · Trabajo final · Ingeniería de Sistemas · Universidad Aut�
 | Scraper de noticias | ✅ | [scraper/](scraper/) · cada 6 h |
 | App Android | ✅ | [android/](android/) · [APK](https://chatbotunab.duckdns.org/app/descargas/asistente-unab-360.apk) |
 | Documentación técnica | ✅ | README · [docs/](docs/) · [BITACORA.md](BITACORA.md) |
-| Video de demostración | ✅ | grabado desde el emulador; no se versiona por tamaño (se entrega aparte) |
+| Video de demostración | ✅ | [Demo funcional (4:28)](https://youtu.be/iAiiowTgKYs) en web y Android · [Tráiler (1:10)](https://youtu.be/e0BDTLoeVEg) · producción en [docs/VIDEOS.md](docs/VIDEOS.md) |
 
 ### Más allá de lo pedido
 
@@ -350,4 +352,6 @@ Ver la sección **[✅ Cumplimiento del enunciado](#-cumplimiento-del-enunciado-
 | [DESPLIEGUE-AWS.md](docs/DESPLIEGUE-AWS.md) · [LLM-PROVEEDOR.md](docs/LLM-PROVEEDOR.md) | Infraestructura y proveedor LLM |
 | [servicios-api/README.md](servicios-api/README.md) | Endpoints, variables, pruebas y modo de pruebas de Bold |
 | [VIDEOS.md](docs/VIDEOS.md) | Guion y producción de los videos (demo funcional y tráiler): voces, música y verificación |
+| [GUIONES-ELEVENLABS.md](docs/GUIONES-ELEVENLABS.md) | Textos de un solo audio para ElevenLabs (con pausas medidas) y prompts de la música |
+| [GUIA-RECORRIDO.md](docs/GUIA-RECORRIDO.md) | Recorrido en vivo para la sustentación: qué hacer, qué decir y qué pasa por dentro |
 | [BITACORA.md](BITACORA.md) | Decisiones y registro del proyecto |

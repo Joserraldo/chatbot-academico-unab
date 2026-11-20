@@ -165,5 +165,9 @@ Tono: anuncio de lanzamiento universitario. Frases cortas con pausas, y la músi
 
 | Video | Voz (nombre · voice_id · modelo) | Música (título · autor · fuente · licencia) | Enlace |
 |---|---|---|---|
-| 01 Demo funcional | | | |
-| 02 Tráiler | | | |
+| 01 Demo funcional (4:28) | ElevenLabs, un solo audio cortado en 17 bloques (nombre y voice_id: por anotar) | ElevenLabs Music, dos partes unidas con fundido de 4 s, recortada a la duración del video | <https://youtu.be/iAiiowTgKYs> |
+| 02 Tráiler (1:10) | ElevenLabs, un solo audio cortado en 8 bloques (nombre y voice_id: por anotar) | ElevenLabs Music, 70 s, retrasada 1 s para que la entrada caiga en 18 s y el drop en 52 s | <https://youtu.be/e0BDTLoeVEg> |
+
+**Cómo se arman:** las grabaciones crudas quedan en `videos/raw/` y los proyectos HyperFrames en `videos/hf-demo/` y `videos/hf-trailer/`. `videos/demo_spec.py` define las escenas de la demo (recortes, velocidades, resaltados y voces), `videos/demo_build.py` genera los clips y las composiciones, y `videos/mezcla.py` corta el audio único de ElevenLabs (`split` por silencios; si la voz sale sin pausas largas, se corta por palabras con una transcripción de Whisper), normaliza las voces y le baja la música bajo la voz (`prep`, demo con ganancia 0,45 y ducking 0,55; tráiler 1,0 y 0,75), rehace la pista de audio sin volver a renderizar (`mixdown`) y masteriza a −14 LUFS (`master`). La voz queda unos 8 dB por encima de la música.
+
+**Nota de grabación (20-nov-2026):** al grabar, el botón "Pagar con Bold" de la app Android no abría el checkout: en el WebView las unidades `vh`/`dvh` valen 0 y el modal embebido de Bold quedaba con alto 0. Por eso la escena 11 muestra chat, gráfica y panel Hoy en Android, y el pago se ve en la web. Ya está corregido en `web/pagar.html`: dentro del WebView se usa el modo `redirect` de Bold (verificado de punta a punta en el emulador, con pago aprobado y regreso a la app).
