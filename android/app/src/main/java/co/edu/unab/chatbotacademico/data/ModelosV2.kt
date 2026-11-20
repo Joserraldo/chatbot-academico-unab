@@ -10,16 +10,24 @@ data class PersonaDemo(
     val programa: String,
     val titulo: String,
     val emoji: String = "🎓",
+    val descripcion: String = "",
 )
 
 val personasRespaldo = listOf(
-    PersonaDemo("U00000001", "Estudiante demo", "Ingeniería de Sistemas", "Caso original", "🎓"),
-    PersonaDemo("U00000201", "Valentina", "Ingeniería de Sistemas", "Rendimiento excelente", "🌟"),
-    PersonaDemo("U00000202", "Mateo", "Medicina", "En riesgo académico", "🩺"),
-    PersonaDemo("U00000203", "Camila", "Derecho", "Cerca del grado", "⚖️"),
-    PersonaDemo("U00000204", "Sofía", "Psicología", "Primer semestre", "🌱"),
-    PersonaDemo("U00000205", "Samuel", "Administración de Empresas", "Matrícula pendiente", "💳"),
-    PersonaDemo("U00000206", "Isabella", "Ingeniería Mecatrónica", "Préstamo vencido", "📚"),
+    PersonaDemo("U00000001", "Laura", "Ingeniería de Sistemas", "Laura · semestre 6", "🧑‍💻",
+        "Consulta qué cursos necesita recuperar para avanzar."),
+    PersonaDemo("U00000201", "Santiago", "Ingeniería de Sistemas", "Santiago · casi graduado", "🎓",
+        "Pregunta qué requisitos de grado le faltan."),
+    PersonaDemo("U00000202", "Valentina", "Medicina", "Valentina · en riesgo", "🩺",
+        "Consulta su riesgo académico y sus tareas vencidas."),
+    PersonaDemo("U00000203", "Juan Camilo", "Derecho", "Juan Camilo · cerca del grado", "⚖️",
+        "Consulta cuántos semestres y requisitos de grado le quedan."),
+    PersonaDemo("U00000204", "Sofía", "Psicología", "Sofía · primer semestre", "🧠",
+        "Consulta su horario, el calendario y cómo moverse en la universidad."),
+    PersonaDemo("U00000205", "Andrés Felipe", "Administración de Empresas", "Andrés Felipe · matrícula pendiente", "💼",
+        "Prueba el pago de su matrícula con Bold en modo de pruebas."),
+    PersonaDemo("U00000206", "Nicolás", "Ingeniería Mecatrónica", "Nicolás · préstamo vencido", "🤖",
+        "Consulta cómo renovar su préstamo y pagar la multa."),
 )
 
 @Serializable
@@ -84,7 +92,25 @@ data class Hoy(
     val prestamos: List<Prestamo> = emptyList(),
     @SerialName("pagos_pendientes") val pagos: List<Accion.Pago> = emptyList(),
     val noticias: List<Noticia> = emptyList(),
+    val estudiante: Estudiante? = null,
+    @SerialName("horario_hoy") val horario: List<Clase> = emptyList(),
+    val riesgo: Riesgo? = null,
 ) {
+    @Serializable
+    data class Estudiante(
+        val nombre: String,
+        val programa: String,
+        @SerialName("semestre_actual") val semestre: Int? = null,
+        val promedio: Double? = null,
+        @SerialName("porcentaje_avance") val avance: Double? = null,
+    )
+
+    @Serializable
+    data class Clase(val curso: String, val horario: String, val salon: String, val docente: String)
+
+    @Serializable
+    data class Riesgo(val nivel: String)
+
     @Serializable
     data class Tarea(
         val titulo: String,
@@ -105,5 +131,5 @@ data class Hoy(
     )
 
     @Serializable
-    data class Noticia(val titulo: String, val url: String, val fuente: String)
+    data class Noticia(val titulo: String, val url: String, val fuente: String, val fecha: String? = null)
 }

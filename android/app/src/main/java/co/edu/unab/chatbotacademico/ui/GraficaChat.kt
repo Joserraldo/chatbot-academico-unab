@@ -3,28 +3,33 @@ package co.edu.unab.chatbotacademico.ui
 import android.graphics.Paint
 import android.text.TextPaint
 import android.text.TextUtils
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.semantics.contentDescription
@@ -32,16 +37,17 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import co.edu.unab.chatbotacademico.data.Grafica
+import co.edu.unab.chatbotacademico.ui.componentes.TarjetaRespuesta
 import java.text.NumberFormat
 import java.util.Locale
 import kotlin.math.abs
 import kotlin.math.ceil
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun GraficaChat(grafica: Grafica) {
-    val palette = listOf(MaterialTheme.colorScheme.primary, UnabOrange, Color(0xFF008477), Color(0xFFC65C8E))
-    val axisColor = MaterialTheme.colorScheme.outlineVariant
-    val labelColor = MaterialTheme.colorScheme.onSurfaceVariant
+    val palette = listOf(UnabPurple, NaranjaFuerte, TextoExito, Color(0xFFC65C8E))
+    val progreso = remember(grafica) { Animatable(0f) }
     val format = remember { NumberFormat.getNumberInstance(Locale.forLanguageTag("es-CO")).apply { maximumFractionDigits = 2 } }
     val labels = grafica.labels
     val series = grafica.series
@@ -50,10 +56,15 @@ fun GraficaChat(grafica: Grafica) {
     }
     val doughnut = grafica.tipo == "doughnut"
     val hayDatos = valores.any { !doughnut || it > 0.0 }
+    LaunchedEffect(progreso, hayDatos) {
+        if (hayDatos) progreso.animateTo(1f, tween(700))
+    }
 
     TarjetaRespuesta {
         Text(grafica.titulo, style = MaterialTheme.typography.titleMedium)
-        grafica.unidad?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.labelMedium) }
+        grafica.unidad?.takeIf { it.isNotBlank() }?.let {
+            Text(it, style = MaterialTheme.typography.labelMedium, color = TextoTenue)
+        }
         if (hayDatos) {
             val accesible = remember(grafica) {
                 series.joinToString(". ") { serie ->
@@ -67,18 +78,18 @@ fun GraficaChat(grafica: Grafica) {
                 Modifier.fillMaxWidth().height(184.dp).semantics { contentDescription = accesible },
             ) {
                 if (doughnut) {
-                    dibujarAnillos(grafica, palette)
+                    dibujarAnillos(grafica, palette, progreso.value)
                 } else {
                     val escalaNota = grafica.unidad?.contains("0-5") == true
                     val minimo = minOf(0.0, valores.min())
                     val maximo = maxOf(if (escalaNota) 5.0 else 0.0, valores.max())
-                    dibujarEjes(grafica, palette, axisColor, labelColor, format, minimo, maximo)
+                    dibujarEjes(grafica, palette, Borde, TextoApagado, format, minimo, maximo, progreso.value)
                 }
             }
-            Row(
-                Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+            FlowRow(
+                Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.CenterVertically,
+                verticalArrangement = Arrangement.spacedBy(5.dp),
             ) {
                 val leyenda = if (doughnut) labels else series.map { it.nombre }
                 leyenda.forEachIndexed { indice, nombre ->
@@ -109,6 +120,7 @@ private fun DrawScope.dibujarEjes(
     formato: NumberFormat,
     minimo: Double,
     maximo: Double,
+    progreso: Float,
 ) {
     val rango = (maximo - minimo).takeIf { it > 0.0 } ?: 1.0
     val paint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -148,28 +160,43 @@ private fun DrawScope.dibujarEjes(
         }
     }
 
-    val anchoGrupo = paso * 0.76f
-    val anchoBarra = anchoGrupo / grafica.series.size
-    grafica.series.forEachIndexed { indice, serie ->
-        val color = palette[indice % palette.size]
-        var anterior: Offset? = null
-        serie.datos.take(grafica.labels.size).forEachIndexed { i, valor ->
-            val punto = valor?.takeIf(Double::isFinite)?.let { Offset(x(i), y(it)) }
-            if (punto != null) {
-                if (grafica.tipo == "line") {
-                    anterior?.let { drawLine(color, it, punto, 2.dp.toPx()) }
-                    drawCircle(color, 3.dp.toPx(), punto)
-                } else {
-                    val borde = x(i) - anchoGrupo / 2 + anchoBarra * indice
-                    drawRect(color, Offset(borde, minOf(punto.y, y(0.0))), Size(anchoBarra * 0.88f, abs(punto.y - y(0.0))))
+    if (grafica.tipo == "line") {
+        clipRect(right = izquierda + (size.width - izquierda) * progreso) {
+            grafica.series.forEachIndexed { indice, serie ->
+                val color = palette[indice % palette.size]
+                var anterior: Offset? = null
+                serie.datos.take(grafica.labels.size).forEachIndexed { i, valor ->
+                    val punto = valor?.takeIf(Double::isFinite)?.let { Offset(x(i), y(it)) }
+                    if (punto != null) {
+                        anterior?.let { drawLine(color, it, punto, 2.dp.toPx()) }
+                        drawCircle(color, 3.dp.toPx(), punto)
+                    }
+                    anterior = punto
                 }
             }
-            anterior = punto
+        }
+        return
+    }
+
+    val anchoGrupo = paso * 0.76f
+    val anchoBarra = anchoGrupo / grafica.series.size
+    val base = y(0.0)
+    grafica.series.forEachIndexed { indice, serie ->
+        val color = palette[indice % palette.size]
+        serie.datos.take(grafica.labels.size).forEachIndexed { i, valor ->
+            if (valor != null && valor.isFinite()) {
+                val extremo = y(valor * progreso)
+                val borde = x(i) - anchoGrupo / 2 + anchoBarra * indice
+                drawRoundRect(
+                    color, Offset(borde, minOf(extremo, base)),
+                    Size(anchoBarra * 0.88f, abs(extremo - base)), CornerRadius(3.dp.toPx()),
+                )
+            }
         }
     }
 }
 
-private fun DrawScope.dibujarAnillos(grafica: Grafica, palette: List<Color>) {
+private fun DrawScope.dibujarAnillos(grafica: Grafica, palette: List<Color>, progreso: Float) {
     val radioMaximo = size.minDimension / 2 - 4.dp.toPx()
     val paso = radioMaximo * 0.62f / grafica.series.size
     grafica.series.forEachIndexed { indice, serie ->
@@ -180,9 +207,10 @@ private fun DrawScope.dibujarAnillos(grafica: Grafica, palette: List<Color>) {
             var inicio = -90f
             valores.forEachIndexed { i, valor ->
                 val giro = (360 * valor / total).toFloat()
-                if (giro > 0f) {
+                val visible = minOf(giro, 360f * progreso - (inicio + 90f))
+                if (visible > 0f) {
                     drawArc(
-                        palette[i % palette.size], inicio, giro, false,
+                        palette[i % palette.size], inicio, visible, false,
                         topLeft = Offset(center.x - radio, center.y - radio),
                         size = Size(radio * 2, radio * 2),
                         style = Stroke(paso * 0.86f),
