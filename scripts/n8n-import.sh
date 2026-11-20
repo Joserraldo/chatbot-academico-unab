@@ -14,7 +14,7 @@ rm -f n8n/.credentials.json   # no dejar secretos en texto plano en disco
 docker compose exec -T n8n n8n import:workflow --separate --input=/bootstrap/workflows/
 
 # n8n 2.x exige publicar primero los sub-workflows y después el router que los llama.
-for id in wf01GeneralRAG00 wf02Calendario00 wf03CursosMCP000 wf04Noticias0000 wfRouterChatUNAB; do
+for id in wf01GeneralRAG00 wf02Calendario00 wf03CursosMCP000 wf04Noticias0000 wf06Tramites0000 wfRouterChatUNAB; do
   docker compose exec -T n8n n8n publish:workflow --id="$id"
 done
 docker compose restart n8n
