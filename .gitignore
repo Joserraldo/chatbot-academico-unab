@@ -17,3 +17,6 @@ backup*.sql
 .claude/worktrees/
 CLAUDE.local.md
 .playwright-mcp/
+
+# Videos de demo y tráiler (se entregan por enlace, no se versionan)
+videos/

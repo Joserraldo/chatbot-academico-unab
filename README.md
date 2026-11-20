@@ -349,4 +349,5 @@ Ver la sección **[✅ Cumplimiento del enunciado](#-cumplimiento-del-enunciado-
 | [SCRAPER.md](docs/SCRAPER.md) | Fuentes, clasificación e integración |
 | [DESPLIEGUE-AWS.md](docs/DESPLIEGUE-AWS.md) · [LLM-PROVEEDOR.md](docs/LLM-PROVEEDOR.md) | Infraestructura y proveedor LLM |
 | [servicios-api/README.md](servicios-api/README.md) | Endpoints, variables, pruebas y modo de pruebas de Bold |
+| [VIDEOS.md](docs/VIDEOS.md) | Guion y producción de los videos (demo funcional y tráiler): voces, música y verificación |
 | [BITACORA.md](BITACORA.md) | Decisiones y registro del proyecto |
