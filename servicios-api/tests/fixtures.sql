@@ -1,11 +1,6 @@
 -- Datos de prueba separados de los identificadores de la demo.
 SET search_path TO academico, public;
 
-CREATE ROLE servicios_rw LOGIN;
-GRANT USAGE ON SCHEMA academico, servicios TO servicios_rw;
-GRANT SELECT ON ALL TABLES IN SCHEMA academico TO servicios_rw;
-GRANT SELECT, INSERT, UPDATE ON ALL TABLES IN SCHEMA servicios TO servicios_rw;
-GRANT USAGE ON ALL SEQUENCES IN SCHEMA servicios TO servicios_rw;
 
 UPDATE periodo SET actual = false WHERE actual;
 INSERT INTO periodo (id, codigo, fecha_inicio, fecha_fin, actual) VALUES
