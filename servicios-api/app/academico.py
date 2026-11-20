@@ -16,7 +16,7 @@ def noticias(conn, limite):
     return conn.execute("""
         WITH noticias AS (
             SELECT titulo, url, resumen, categoria, fuente, fecha_publicacion, id,
-                   COALESCE(fecha_publicacion::timestamp AT TIME ZONE 'America/Bogota',
+                   COALESCE(fecha_publicacion::timestamp AT TIME ZONE INTERVAL '-05:00',
                             capturada_en) AS fecha_noticia
             FROM academico.noticia
         )
@@ -121,7 +121,7 @@ def analitica(conn):
             FROM academico.chat_log WHERE bloqueado GROUP BY 1 ORDER BY n DESC, motivo
         """).fetchall(),
         "por_dia": conn.execute("""
-            SELECT (creado_en AT TIME ZONE 'America/Bogota')::date AS dia, count(*) AS n
+            SELECT (creado_en AT TIME ZONE INTERVAL '-05:00')::date AS dia, count(*) AS n
             FROM academico.chat_log GROUP BY 1 ORDER BY dia
         """).fetchall(),
         "riesgo": conn.execute("""
