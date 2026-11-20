@@ -10,6 +10,7 @@ psql_run() { docker compose exec -T postgres psql -v ON_ERROR_STOP=1 -U "$POSTGR
 
 echo "==> 04 esquema v2";   psql_run < db/init/04_v2_schema.sql
 echo "==> 05 semilla v2";   psql_run < db/init/05_v2_seed.sql
+if [[ -f db/init/07_v2_riesgo.sql ]]; then echo "==> 07 riesgo (modelo ML)"; psql_run < db/init/07_v2_riesgo.sql; fi
 echo "==> 06 roles v2"
 docker compose exec -T -e SERVICIOS_DB_PASSWORD="$SERVICIOS_DB_PASSWORD" -e POSTGRES_DB=unab postgres \
   bash < db/init/06_v2_roles.sh

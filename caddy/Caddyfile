@@ -1,8 +1,6 @@
 # HTTPS automático con Let's Encrypt para el dominio DuckDNS.
 # Requisitos: el dominio apunta a la Elastic IP y los puertos 80/443 están abiertos.
-{
-	email {$ACME_EMAIL}
-}
+# (Sin directiva email global: Let's Encrypt no la exige y con ACME_EMAIL vacío Caddy no arranca.)
 
 {$DOMAIN} {
 	encode gzip
