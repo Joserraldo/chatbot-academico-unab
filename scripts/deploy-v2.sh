@@ -8,7 +8,7 @@ cd "$(dirname "$0")/.."
 # 1) Variables nuevas en .env (solo si faltan)
 add_env() { grep -q "^$1=" .env || echo "$1=$2" >> .env; }
 add_env SERVICIOS_DB_PASSWORD "$(openssl rand -hex 24)"
-add_env VISION_MODEL qwen3.8
+add_env VISION_MODEL qwen3.8-max
 add_env BOLD_MODO pruebas
 add_env PAGOS_PERMITIR_SIMULADO true
 add_env BOLD_WEBHOOK_SECRET ""

@@ -99,7 +99,7 @@ def describir(mensaje, data_url):
     base_url = os.getenv("LLM_BASE_URL", "").rstrip("/")
     if not base_url:
         return None
-    modelo = os.getenv("VISION_MODEL") or "qwen3.8"
+    modelo = os.getenv("VISION_MODEL") or "qwen3.8-max"
     cuerpo = {
         "model": modelo,
         "messages": [
