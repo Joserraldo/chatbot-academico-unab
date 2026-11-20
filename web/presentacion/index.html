@@ -753,6 +753,15 @@
   .slide.s .card p.note{font-size:14px}
   .viewport{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr)}
   @media (max-width:760px){.hud .hint{display:none}.hud button span{display:none}}
+
+  /* ---------- guion del orador (tecla N) ---------- */
+  .notes{position:fixed;left:50%;bottom:70px;transform:translateX(-50%);width:min(980px,calc(100vw - 28px));max-height:42vh;overflow:auto;background:rgba(15,23,42,.96);color:#F1F5F9;border-radius:12px;padding:14px 18px 16px;font:16px/1.55 system-ui,Segoe UI,sans-serif;box-shadow:0 10px 40px rgba(0,0,0,.45);z-index:50;display:none}
+  .notes.on{display:block}
+  .notes .nw{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:2px 10px;border-radius:99px;background:#F5A623;color:#1B2A4E;margin-bottom:8px}
+  .notes .nw.j{background:#5EEAD4}
+  .notes p{margin:0}
+  .notes .nh{float:right;font-size:12px;opacity:.6}
+  @media print{.notes{display:none!important}}
 </style>
 <script>function fb(i){var w=i.closest(".win,.phn,.fig");if(w)w.classList.add("is-missing");}</script>
 </head>
@@ -1155,7 +1164,7 @@
   <div class="hud-left">
     <button type="button" id="prev" aria-label="Diapositiva anterior">‹</button>
     <button type="button" id="next" aria-label="Diapositiva siguiente">›</button>
-    <span class="hint">← → · clic · F pantalla completa</span>
+    <span class="hint">← → · clic · F pantalla completa · N guion</span>
   </div>
   <div class="hud-center">
     <span id="counter" aria-live="polite" aria-atomic="true">1 / 22</span>
@@ -1178,6 +1187,119 @@
   var nextButton = document.getElementById("next");
   var fullButton = document.getElementById("full");
   var index = 0;
+
+
+  var NOTES = [
+ {
+  "w": "Santiago",
+  "t": "Buenas. Somos José Téllez y Santiago Cabezas, de Ciencia de Datos. Les presentamos el Asistente UNAB 360: un asistente que conoce las notas, las tareas, los libros y el riesgo académico de cada estudiante, y que además cobra, reserva y lee fotos. Detrás hay n8n, agentes con MCP, RAG y un modelo de riesgo explicable, todo en AWS con HTTPS. Cifras para abrir: 18 herramientas, 6 workflows y un AUC de 0,86."
+ },
+ {
+  "w": "Santiago",
+  "t": "El problema: cada estudiante pregunta algo distinto: ¿cómo voy?, ¿qué me falta?, ¿estoy en riesgo?, ¿qué hago hoy? Y la información está repartida en Cosmos, TEMA, biblioteca, tesorería, reservas y noticias, cada una con su login. Nuestro objetivo es un solo asistente conversacional que cruce esos datos, explique y recomiende acciones concretas: educación de precisión. Es personalizado, accionable, explicable y no punitivo. Y todo es sintético: cero datos reales."
+ },
+ {
+  "w": "Santiago",
+  "t": "Ahora la demo, y pueden probarla ustedes desde el celular. Escanean el QR o abren chatbotunab.duckdns.org/app, pulsan una persona en «Probar como» y preguntan «¿Cuál es mi riesgo académico?». Aclaro: datos 100 % sintéticos y pagos en modo pruebas de Bold. La clave la damos nosotros. [Si hay tiempo, hacer la pregunta en vivo.]"
+ },
+ {
+  "w": "Santiago",
+  "t": "Armamos seis carreras con siete historias controladas, para que cada una active una herramienta distinta. Sistemas es casi graduado; Medicina tiene riesgo alto y tareas vencidas; Derecho está cerca del grado y tiene una reserva; Psicología es primer semestre; Administración tiene la matrícula pendiente de pago; y Mecatrónica un préstamo vencido con multa. Así la demo es predecible y se ve toda la herramienta."
+ },
+ {
+  "w": "Santiago",
+  "t": "La arquitectura. Entra el cliente: app Android, web o Claude por MCP, todo detrás de Caddy con HTTPS. n8n orquesta: un router con guardrails, visión, clasificación de intención y enriquecimiento, y seis workflows: RAG, calendario, historial, noticias, ingesta y trámites con pagos. Debajo, el servicios-api en FastAPI, el servidor MCP con 18 herramientas de solo lectura, el scraper de noticias, PostgreSQL con pgvector y el LLM de B.AI. La idea central: el modelo redacta, pero los datos y las acciones los hacen herramientas deterministas."
+ },
+ {
+  "w": "Santiago",
+  "t": "El flujo de una pregunta, en ocho pasos. La app manda sesión, código, mensaje e imagen. El guardrail de entrada revisa código, inyección, SQL y tamaño. Si hay imagen, OpenCV lee el QR y qwen transcribe; ese resultado se trata como dato, nunca como instrucción. Luego se clasifica la intención, el agente usa sus herramientas, el guardrail de salida limpia la respuesta, se enriquece con tarjetas, QR y gráficas, y todo queda en el chat_log para auditoría."
+ },
+ {
+  "w": "Santiago",
+  "t": "Las 18 herramientas MCP son de solo lectura y están agrupadas: Cosmos para notas, horario y proyección; TEMA para tareas y docentes; biblioteca y trámites; riesgo con recomendaciones; y competencias digitales con búsqueda en documentos. Destaco resumen_360: una sola llamada responde «¿cómo voy?» con notas, tareas, horario, pagos, biblioteca y riesgo, y evita muchas llamadas al modelo."
+ },
+ {
+  "w": "Santiago",
+  "t": "El RAG: tomamos documentos institucionales, los partimos en fragmentos de 800 caracteres con solape de 120, generamos embeddings con un MiniLM multilingüe en CPU, sin API externa, y los guardamos en pgvector con búsqueda por coseno. El agente responde y cita la fuente; si no está en el documento, lo dice. Son 26 fragmentos. Una lección: la API del LLM rechazó la ruta de embeddings, y por eso usamos un modelo local."
+ },
+ {
+  "w": "Santiago",
+  "t": "Los datos: 206 estudiantes, 6 programas, más de 6 mil registros de historial y 128 préstamos de biblioteca. Un generador determinista con semilla fija, para que cualquier despliegue dé lo mismo. El plan de Sistemas es real, sacado del PDF institucional: 48 cursos y 151 créditos. Y las personas con historia hacen que cada caso active una herramienta distinta. Ningún dato corresponde a una persona real."
+ },
+ {
+  "w": "Santiago",
+  "t": "El modelo de riesgo, diseñado sin fuga de información. Las variables llegan hasta 2025-2; la etiqueta es 2026-1: reprobó un curso o promedio menor a 3,3; y puntuamos a los 206 estudiantes en 2026-2. Comparamos regresión logística y bosque aleatorio. El bosque ganó por 0,002 en validación cruzada, un empate técnico, así que por parsimonia elegimos la logística, que es interpretable y además rindió mejor en prueba: AUC 0,77."
+ },
+ {
+  "w": "Santiago",
+  "t": "La evidencia: curva ROC, matriz de confusión e importancia de variables. Y la tabla por persona: Sistemas 0,11 bajo, Medicina 0,95 alto, que coincide con cada historia que diseñamos. Lo más importante es la ética: el riesgo es orientativo, no afecta ningún trámite, muestra factores y acciones, y usa lenguaje de apoyo. El límite lo decimos claro: son datos sintéticos, sin calibrar."
+ },
+ {
+  "w": "Santiago",
+  "t": "El scraper de noticias: 11 fuentes, entre UNAB, Google Noticias y cinco medios tecnológicos. Lee RSS con timeout por fuente, normaliza la fecha a Bogotá con ventana de 7 días, clasifica por palabras clave y guarda por URL, sin duplicados: umbral de similitud de 0,88 para títulos. En la prueba trajo 190 noticias del día, y cada una sale con fuente y fecha, en el agente, en el panel «Hoy en tu U» y en Android."
+ },
+ {
+  "w": "Santiago",
+  "t": "Pagos con Bold. El estudiante dice «quiero pagar mi matrícula», aparece una tarjeta con el monto calculado en el servidor, se abre un checkout embebido con el botón de Bold, la firma de integridad sha256 se genera en el backend, y la confirmación llega por webhook con HMAC. La llave secreta nunca llega al navegador, el webhook es idempotente y el chat bloquea números de tarjeta. El modelo nunca toca el dinero."
+ },
+ {
+  "w": "Santiago",
+  "t": "Visión más QR: el estudiante toma una foto del cartel de la biblioteca. qwen3.8-max transcribe el texto en unos 5 segundos y OpenCV decodifica el QR localmente, sin mandarlo al modelo. El resultado es el enlace oficial del catálogo. Probamos 4 modelos con la misma foto y qwen3.8-max transcribió mejor. Insisto: lo que sale de la imagen es dato, nunca instrucción."
+ },
+ {
+  "w": "Santiago",
+  "t": "Del dato a la acción: el panel «Hoy en tu U», trámites con enlace, QR y multa, reservas con control de choques, cobro de espacios con tarifa, y gráficas de notas, avance, parciales, riesgo y cohorte generadas en el chat. Además recuerda cosas como calificar al profesor."
+ },
+ {
+  "w": "Santiago",
+  "t": "La app: el mismo contrato, dos clientes. La web móvil y la app Android en Kotlin con Jetpack Compose consumen el mismo POST /webhook/chat. El pago se hace en un WebView propio, y la clave se pide en la app, no va incrustada. [Aquí pasa la palabra a José.]"
+ },
+ {
+  "w": "José",
+  "t": "Gracias, Santiago. Yo cubro la seguridad y cómo se construyó. Los guardrails son reglas deterministas antes y después del modelo. De entrada bloqueamos inyección de prompt, SQL directo, códigos de otros estudiantes, tarjetas, contraseñas y lenguaje ofensivo. De salida ocultamos códigos ajenos, correos y errores técnicos. Y a nivel de sistema, mínimo privilegio: chatbot_ro solo lee, servicios_rw solo escribe, solo los puertos 80, 443 y 9000 son públicos, y la identidad sale de la sesión. Si alguien pide las notas de otro estudiante, se bloquea y se audita."
+ },
+ {
+  "w": "José",
+  "t": "La pertinencia pedagógica: diseñamos sobre evidencia. Zimmerman y la autorregulación: planificar con la proyección de semestres, ejecutar con la nota necesaria y las tareas, reflexionar con las gráficas. Hattie y Timperley y la retroalimentación: cada respuesta contesta ¿a dónde voy?, ¿cómo voy? y ¿qué sigue? Y en learning analytics, Siemens, Arnold y Slade: alerta temprana ética, con riesgo transparente y factores visibles."
+ },
+ {
+  "w": "José",
+  "t": "Y ahora cómo se construyó. Primero congelamos un contrato, CONTRATOS-V2 y un DDL común, antes de escribir código. Después abrimos ocho frentes en paralelo, cada uno en su git worktree. Y al final integramos, revisamos y desplegamos con 15 pruebas de humo. Los roles: Claude Opus de líder, con contratos, integración, despliegue y revisión; Claude Sonnet ejecutando código y documentación por frente; Codex con los primeros borradores de API, Android y ML; y nosotros dos con la arquitectura, los datos, AWS, las pruebas y las decisiones. Con honestidad: Codex se quedó sin cuota a mitad de camino y Sonnet retomó; el borrador del API estaba casi completo, con un bug de zona horaria, y el de ML hubo que corregirlo y ejecutarlo. La lección: los modelos aceleran, pero los contratos y las pruebas evitan que los frentes se contradigan."
+ },
+ {
+  "w": "José",
+  "t": "Resultados, verificados de punta a punta en producción: 15 de 15 pruebas de humo en verde en la EC2, 45 pruebas automáticas del API, 18 herramientas MCP, 26 fragmentos RAG, AUC 0,857 en validación cruzada y 0,770 en prueba, 190 noticias de 11 fuentes y 206 estudiantes puntuados. El smoke test cubre las intenciones, trámites, pago, TEMA, Cosmos, gráfica, noticias, imagen y guardrails."
+ },
+ {
+  "w": "José",
+  "t": "Cada criterio de la rúbrica tiene un lugar donde verlo: el scraper en scraper/ y docs/SCRAPER.md, la app Android en android/ y las capturas, la documentación técnica en el README y docs/, y la pertinencia pedagógica en PROMPTS.md y PERTINENCIA-PEDAGOGICA.md. Todo está en el repositorio."
+ },
+ {
+  "w": "José",
+  "t": "Para cerrar: un asistente que cruza los datos de la universidad, explica con evidencia y actúa con seguridad. La demo sigue disponible en chatbotunab.duckdns.org/app, la analítica en /app/analitica y el código en GitHub. Como trabajo futuro: validar con estudiantes reales y revisión ética, calibrar el modelo por programa y conectar fuentes institucionales reales. Gracias, ¿preguntas?"
+ }
+];
+  var notesBox = document.createElement("aside");
+  notesBox.className = "notes";
+  notesBox.setAttribute("aria-label", "Guion del orador");
+  document.body.appendChild(notesBox);
+  var notesOn = false;
+  try { notesOn = window.localStorage.getItem("guion") === "1"; } catch (e) {}
+  function renderNotes() {
+    var n = NOTES[index];
+    notesBox.classList.toggle("on", notesOn && !!n);
+    if (!n) return;
+    notesBox.innerHTML = "";
+    var h = document.createElement("span"); h.className = "nh"; h.textContent = "N oculta el guion · " + (index + 1) + "/" + total;
+    var w = document.createElement("span"); w.className = "nw" + (n.w === "José" ? " j" : ""); w.textContent = "Habla: " + n.w;
+    var p = document.createElement("p"); p.textContent = n.t;
+    notesBox.appendChild(h); notesBox.appendChild(w); notesBox.appendChild(p);
+  }
+  function toggleNotes() {
+    notesOn = !notesOn;
+    try { window.localStorage.setItem("guion", notesOn ? "1" : "0"); } catch (e) {}
+    renderNotes();
+  }
 
   function clamp(n) {
     return Math.max(0, Math.min(total - 1, n));
@@ -1207,6 +1329,7 @@
       );
     });
 
+    renderNotes();
     counter.textContent = (index + 1) + " / " + total;
     bar.style.width = (((index + 1) / total) * 100) + "%";
     progress.setAttribute("aria-valuenow", String(index + 1));
@@ -1302,6 +1425,11 @@
       case "End":
         event.preventDefault();
         go(total - 1);
+        break;
+      case "n":
+      case "N":
+        event.preventDefault();
+        toggleNotes();
         break;
       case "f":
       case "F":
