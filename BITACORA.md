@@ -58,6 +58,36 @@ Registro cronológico de decisiones, avances y problemas. Formato: fecha · resp
 
 ---
 
+## 2026-11-19 · José — v2 "Asistente UNAB 360" (orquestación multiagente)
+
+**Hecho**
+- Contrato congelado primero ([docs/CONTRATOS-V2.md](docs/CONTRATOS-V2.md)) y DDL común (`04_v2_schema.sql`). Después, ocho frentes en paralelo, cada uno en su propio git worktree:
+  - `servicios-api`: reservas, pagos Bold, QR, gráficas, visión, panel "Hoy", analítica.
+  - Semilla v2: 5 carreras, 7 personas, Cosmos, TEMA, biblioteca y espacios.
+  - MCP: 8 herramientas más.
+  - Router n8n con visión y enriquecimiento, y workflow 06 de trámites.
+  - Web y Android v2.
+  - Scraper de 11 fuentes.
+  - Modelo de riesgo.
+  - Documentación: prompts, manual y pertinencia.
+- Modelos: Claude Opus como líder (contratos, integración, despliegue, revisión), Claude Sonnet para código y documentación, Codex (GPT Sol 6.2) para los primeros borradores del API, Android y ML.
+- Despliegue en la EC2 con `scripts/deploy-v2.sh`, sin borrar volúmenes. Antes se sacaron backups del proyecto y un `pg_dumpall` en `~/backups/`. Quedaron 15 pruebas de humo en verde, el RAG reindexado (26 fragmentos, incluido `tramites_unab.md`) y el riesgo puntuado para los 206 estudiantes.
+
+**Problemas / decisiones**
+- **Tarjetas y gráficas deterministas** (`/api/asistente/enriquecer`) en lugar de pedirle JSON al LLM: la demo no puede depender de que un modelo *flash* arme bien una orden de pago.
+- **Visión:** `qwen3.8` no existe en B.AI. Se probaron 4 modelos con la foto del cartel de biblioteca y se eligió `qwen3.8-max` (5 s, buena transcripción). El QR se decodifica localmente con OpenCV: `https://catalogo.unab.edu.co/`.
+- **Bold:**
+  - El botón embebido (`data-render-mode="embedded"`) no tiene callbacks JS. El pago se confirma con el webhook (HMAC sobre el cuerpo en base64; llave vacía en modo pruebas) o consultando `payment-voucher`.
+  - En pruebas Bold no envía el webhook solo.
+  - Bold prohíbe iframes, así que la web navega a `pagar.html` y conserva la conversación en `sessionStorage`. Android usa un WebView propio.
+- **ML:** se descartó usar tareas de TEMA y el corte 1 como variables, porque solo existen para el periodo actual y meterlas en el entrenamiento sería fuga o columnas vacías. La regla de parsimonia eligió la logística: empate técnico en CV y mejor desempeño en prueba.
+- **Codex se quedó sin cuota a mitad de camino:** Sonnet retomó sus borradores. El del API resultó casi completo (el único bug fue la zona horaria, porque pgserver no trae tzdata). El de ML hubo que corregirlo y ejecutarlo.
+- **EC2:** no era un clon de git (se despliega con `git archive`). El Caddyfile del servidor no tenía `email`, porque con `ACME_EMAIL` vacío Caddy no arranca; se quitó del repo. Caddy hay que recrearlo para que lea el Caddyfile nuevo. `n8n execute` por CLI choca con el puerto del task broker, así que se le pasa `N8N_RUNNERS_BROKER_PORT` aparte.
+
+**Evidencias:** `docs/evidencias/v2/`, `docs/evidencias/ml/`, `analitica/riesgo_academico.ipynb`, salida de `scripts/smoke-test.sh`.
+
+---
+
 <!-- Plantilla para nuevas entradas
 ## AAAA-MM-DD · Nombre — Título
 **Hecho**
