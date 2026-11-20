@@ -1,5 +1,6 @@
 package co.edu.unab.chatbotacademico.ui.componentes
 
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -97,6 +98,8 @@ internal fun Insignia(texto: String, color: Color = MoradoFuerte, fondo: Color =
         modifier = Modifier.background(fondo, CircleShape).padding(horizontal = 9.dp, vertical = 4.dp),
         color = color,
         style = MaterialTheme.typography.labelMedium,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
     )
 }
 

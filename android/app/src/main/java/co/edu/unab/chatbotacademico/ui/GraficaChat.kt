@@ -27,6 +27,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipRect
@@ -147,6 +148,13 @@ private fun DrawScope.dibujarEjes(
     drawLine(ejes, Offset(izquierda, arriba), Offset(izquierda, abajo))
     if (minimo < 0 && maximo > 0) {
         drawLine(ejes, Offset(izquierda, y(0.0)), Offset(derecha, y(0.0)), 2.dp.toPx())
+    }
+    if (grafica.unidad?.contains("0-5") == true && 3.0 in minimo..maximo) {
+        val aprueba = y(3.0)
+        drawLine(
+            Color(0xFFD93A3A), Offset(izquierda, aprueba), Offset(derecha, aprueba), 1.5.dp.toPx(),
+            pathEffect = PathEffect.dashPathEffect(floatArrayOf(8.dp.toPx(), 5.dp.toPx())),
+        )
     }
 
     paint.textAlign = Paint.Align.CENTER
