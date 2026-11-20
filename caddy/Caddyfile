@@ -15,6 +15,9 @@
 		reverse_proxy servicios-api:8000
 	}
 
+	# La raíz del dominio abre el chat; el editor de n8n sigue en /home/workflows y /signin
+	redir / /app/ 302
+
 	# Chat web, checkout embebido, analítica y presentación
 	redir /app /app/ 308
 	handle_path /app/* {

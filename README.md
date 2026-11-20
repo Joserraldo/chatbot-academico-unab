@@ -8,7 +8,7 @@
 
 Ciencia de Datos · Trabajo final · Ingeniería de Sistemas · Universidad Autónoma de Bucaramanga
 
-[**Probar la demo**](https://chatbotunab.duckdns.org/app/) · [Dashboard de analítica](https://chatbotunab.duckdns.org/app/analitica/) · [Presentación](https://chatbotunab.duckdns.org/app/presentacion/) · [Manual de usuario](docs/MANUAL-USUARIO.md) · [**Descargar APK Android**](https://chatbotunab.duckdns.org/app/descargas/asistente-unab-360.apk) · [App Android](android/README.md)
+[**✅ Cómo cumplimos el enunciado**](#-cumplimiento-del-enunciado-tema-2) · [**Probar la demo**](https://chatbotunab.duckdns.org/app/) · [Dashboard de analítica](https://chatbotunab.duckdns.org/app/analitica/) · [Presentación](https://chatbotunab.duckdns.org/app/presentacion/) · [Manual de usuario](docs/MANUAL-USUARIO.md) · [**Descargar APK Android**](https://chatbotunab.duckdns.org/app/descargas/asistente-unab-360.apk) · [App Android](android/README.md)
 
 </div>
 
@@ -19,6 +19,72 @@ Ciencia de Datos · Trabajo final · Ingeniería de Sistemas · Universidad Aut�
 | **Estado** | Desplegado en AWS EC2 con HTTPS. 15 pruebas de humo en verde: 4 intenciones v1, trámites, pago, TEMA/Cosmos, gráfica, noticias, imagen y guardrails |
 | **Equipo** | José Téllez (arquitectura, datos, workflows, servicios v2, ML, documentación) · Santiago Cabezas (infraestructura AWS, despliegue, frontend v1, evidencias) |
 | **Stack** | n8n · PostgreSQL 16 + pgvector · FastMCP · FastAPI · LLM `qwen3.8` (B.AI) · scikit-learn · Kotlin/Compose · Caddy · Docker Compose |
+
+---
+
+## ✅ Cumplimiento del enunciado (Tema 2)
+
+> **Todo lo que pide el enunciado está desplegado y funcionando en <https://chatbotunab.duckdns.org>.** Abajo, cada criterio con su peso, cómo lo cumplimos y dónde comprobarlo. Las cifras se midieron en la EC2 el 2026-11-20.
+
+### Qué abrir para verificar
+
+| Qué | Enlace |
+|---|---|
+| 💬 Chat web (el asistente) | <https://chatbotunab.duckdns.org/app/> (la raíz del dominio también redirige aquí) |
+| 📱 App Android (APK 2.1) | <https://chatbotunab.duckdns.org/app/descargas/asistente-unab-360.apk> |
+| ⚙️ Editor de n8n (workflows) | <https://chatbotunab.duckdns.org/home/workflows> (pide la cuenta del equipo) |
+| 🔌 Webhook del chat | `POST https://chatbotunab.duckdns.org/webhook/chat` |
+| 🧰 Servidor MCP (18 herramientas) | `https://chatbotunab.duckdns.org/mcp` (Bearer token) |
+| 🩺 Estado de la API | <https://chatbotunab.duckdns.org/api/health> |
+| 📊 Analítica y modelo ML | <https://chatbotunab.duckdns.org/app/analitica/> |
+| 🎤 Presentación | <https://chatbotunab.duckdns.org/app/presentacion/> |
+
+### Rúbrica · parte 1: componentes del sistema
+
+| Criterio | Peso | Estado | Cómo lo cumplimos | Evidencia |
+|---|:---:|:---:|---|---|
+| **Arquitectura** | 20 % | ✅ | AWS EC2 con Docker Compose: **6 contenedores** (Caddy con HTTPS, n8n, PostgreSQL + pgvector, servidor MCP, servicios-api y scraper). Dominio DuckDNS con TLS de Let's Encrypt | [§1 Arquitectura](#1-arquitectura) · [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md) · [docker-compose.yml](docker-compose.yml) · [docs/DESPLIEGUE-AWS.md](docs/DESPLIEGUE-AWS.md) |
+| **RAG** | 20 % | ✅ | Ingesta con chunking y embeddings (MiniLM multilingüe, 384 dimensiones) en **pgvector**: **26 fragmentos de 6 documentos** institucionales. El agente 01 recupera y **cita la fuente** | [workflow 05](n8n/workflows/05_wf05IngestaRAG00.json) · [workflow 01](n8n/workflows/01_wf01GeneralRAG00.json) · [data/docs_ccd/](data/docs_ccd/) · herramienta MCP `buscar_documentos` |
+| **Workflows n8n** | 20 % | ✅ | **7 workflows** generados como código ([build_workflows.py](n8n/build_workflows.py)): router con guardrails, visión y clasificación de intención; 01 RAG, 02 Calendario, 03 Historial (agente MCP), 04 Noticias, 05 Ingesta y 06 Trámites/pagos. Los 6 de chat están **publicados** | [n8n/workflows/](n8n/workflows/) · [docs/PROMPTS.md](docs/PROMPTS.md) · [scripts/smoke-test.sh](scripts/smoke-test.sh) (15/15 en verde) |
+| **Base de datos** | 10 % | ✅ | PostgreSQL 16 + pgvector. Esquema `academico` (33 tablas, **8 vistas analíticas**, **206 estudiantes** en **6 programas**, que simulan Banner, Cosmos y TEMA), esquema `servicios` (reservas, pagos y riesgo) y vectores RAG. Roles de solo lectura para los agentes | [db/init/](db/init/) · [docs/MODELO-DATOS.md](docs/MODELO-DATOS.md) · [¿Y Supabase?](#y-supabase) |
+| **App móvil** | 20 % | ✅ | App Android nativa (Kotlin + Jetpack Compose) y web móvil, ambas conectadas al webhook | [android/](android/) · [APK](https://chatbotunab.duckdns.org/app/descargas/asistente-unab-360.apk) · capturas 40-47 |
+| **Documentación** | 10 % | ✅ | README, manual de usuario, arquitectura, contratos, prompts, bitácora y evidencias | [§9 Documentación](#9-documentación) · [BITACORA.md](BITACORA.md) · [docs/evidencias/](docs/evidencias/) |
+
+### Rúbrica · parte 2: funcionalidades
+
+| Criterio | Peso | Estado | Lo que pidió el profesor → lo que hicimos | Evidencia |
+|---|:---:|:---:|---|---|
+| **Scraper de noticias** | 10 % | ✅ | *"Noticias del día de educación, tecnología e ingeniería de sistemas, con fuente y fecha, integradas"* → scraper de **11 fuentes RSS** que corre cada 6 h. Hoy guarda **376 noticias (228 de las últimas 48 h)**, cada una con fuente, fecha y categoría. Está integrado al agente (workflow 04), al panel "Hoy en tu U" y a Android | [scraper/](scraper/) · [docs/SCRAPER.md](docs/SCRAPER.md) · capturas [31](docs/evidencias/v2/31-chat-hoy.png) y [44](docs/evidencias/v2/44-android-hoy.png) |
+| **Aplicación Android** | 15 % | ✅ | *"Consultas de matrícula, estado académico, proyección y recomendaciones; interfaz clara; conectada al webhook"* → las cuatro consultas, más gráficas, lectura de imágenes, voz, panel "Hoy" y pago con Bold dentro de la app | [android/](android/) · [manual §5](docs/MANUAL-USUARIO.md) · capturas [41](docs/evidencias/v2/41-android-chat.png) · [42](docs/evidencias/v2/42-android-pago.png) · [43](docs/evidencias/v2/43-android-bold.png) · [47](docs/evidencias/v2/47-android-grafica-riesgo.png) |
+| **Documentación técnica** | 10 % | ✅ | *"README en GitHub con descripción, arquitectura, instalación e imágenes, y manual de usuario"* → este README (descripción, [arquitectura](#1-arquitectura), [instalación](#4-instalación-y-despliegue-replicable) y [capturas](#capturas)) y el [manual de usuario](docs/MANUAL-USUARIO.md) con capturas | este archivo · [docs/MANUAL-USUARIO.md](docs/MANUAL-USUARIO.md) |
+| **Pertinencia pedagógica** | 5 % | ✅ | *"Respuestas personalizadas y accionables, prompts usados, educación de precisión y autoaprendizaje, evidencia de investigación"* → cada respuesta usa los datos del estudiante y termina en una acción concreta (pagar, reservar, renovar, entregar una tarea). Modelo de riesgo explicable, prompts textuales documentados y 9 referencias verificadas | [docs/PROMPTS.md](docs/PROMPTS.md) · [docs/PERTINENCIA-PEDAGOGICA.md](docs/PERTINENCIA-PEDAGOGICA.md) · [docs/ANALITICA-ML.md](docs/ANALITICA-ML.md) |
+
+### Entregables
+
+| Entregable | Estado | Dónde |
+|---|:---:|---|
+| Arquitectura | ✅ | [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md) |
+| RAG | ✅ | workflows 05 y 01 · pgvector |
+| Base de datos | ✅ | [db/init/](db/init/) · 8 vistas |
+| Workflows n8n | ✅ | [n8n/workflows/](n8n/workflows/) · 6 publicados |
+| Scraper de noticias | ✅ | [scraper/](scraper/) · cada 6 h |
+| App Android | ✅ | [android/](android/) · [APK](https://chatbotunab.duckdns.org/app/descargas/asistente-unab-360.apk) |
+| Documentación técnica | ✅ | README · [docs/](docs/) · [BITACORA.md](BITACORA.md) |
+| Video de demostración | ✅ | grabado desde el emulador; no se versiona por tamaño (se entrega aparte) |
+
+### Más allá de lo pedido
+
+Lectura de imágenes y QR · pagos reales con el botón embebido de Bold (modo pruebas) · reservas de espacios · gráficas generadas en la conversación · simulación de Cosmos, TEMA y Biblioteca · 7 estudiantes demo de 6 carreras · modelo de ML de riesgo académico (AUC 0,86 en validación cruzada) · servidor MCP usable desde Claude · dashboard de analítica.
+
+### ¿Y Supabase?
+
+Las diapositivas proponen Supabase como base de datos. Usamos **el mismo motor que hay debajo de Supabase: PostgreSQL con la extensión pgvector**, pero montado en la propia EC2. Lo decidimos por tres motivos:
+
+1. El plan gratuito de Supabase **pausa el proyecto por inactividad**, y la demo no puede depender de eso.
+2. Así no hay cuentas externas y cualquiera replica todo con `docker compose up`.
+3. Los agentes llegan a la BD por la red interna y con roles de solo lectura.
+
+El SQL es **100 % compatible con Supabase**: para migrar basta ejecutar `db/init/*.sql` en su SQL Editor (con `vector` activado) y cambiar el host en `.env`. Ver [docs/ARQUITECTURA.md §1](docs/ARQUITECTURA.md).
 
 ---
 
@@ -254,13 +320,7 @@ claude mcp add --transport http unab-academico https://<DOMAIN>/mcp --header "Au
 
 ## 8. Rúbrica ↔ evidencia
 
-| Criterio | Dónde está |
-|---|---|
-| **Scraper de noticias** | `scraper/` (11 fuentes; noticias del día con fuente y fecha) integrado al agente (workflow 04), a `/api/noticias/hoy`, al panel "Hoy en tu U" y a Android · [docs/SCRAPER.md](docs/SCRAPER.md) |
-| **Aplicación Android** | `android/`: matrícula, estado académico, proyección, recomendaciones, gráficas, imagen, pago Bold en WebView, conectada al webhook · capturas 40-42 |
-| **Documentación técnica** | Este README (descripción, arquitectura, instalación, imágenes) · [Manual de usuario](docs/MANUAL-USUARIO.md) · [Arquitectura](docs/ARQUITECTURA.md) · [Contratos](docs/CONTRATOS-V2.md) · [Bitácora](BITACORA.md) |
-| **Pertinencia pedagógica** | [Prompts usados](docs/PROMPTS.md) · [Pertinencia pedagógica con evidencia de investigación](docs/PERTINENCIA-PEDAGOGICA.md) · reglas de `recomendaciones` y del modelo de riesgo |
-| Arquitectura, RAG, workflows, BD (v1) | §1, `n8n/workflows/`, `db/init/`, [docs/MODELO-DATOS.md](docs/MODELO-DATOS.md) |
+Ver la sección **[✅ Cumplimiento del enunciado](#-cumplimiento-del-enunciado-tema-2)** al inicio de este README.
 
 ## 9. Documentación
 
