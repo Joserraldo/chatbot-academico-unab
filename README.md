@@ -8,7 +8,7 @@
 
 Ciencia de Datos · Trabajo final · Ingeniería de Sistemas · Universidad Autónoma de Bucaramanga
 
-[**Probar la demo**](https://chatbotunab.duckdns.org/app/) · [Dashboard de analítica](https://chatbotunab.duckdns.org/app/analitica/) · [Presentación](https://chatbotunab.duckdns.org/app/presentacion/) · [Manual de usuario](docs/MANUAL-USUARIO.md) · [App Android](android/README.md)
+[**Probar la demo**](https://chatbotunab.duckdns.org/app/) · [Dashboard de analítica](https://chatbotunab.duckdns.org/app/analitica/) · [Presentación](https://chatbotunab.duckdns.org/app/presentacion/) · [Manual de usuario](docs/MANUAL-USUARIO.md) · [**Descargar APK Android**](https://chatbotunab.duckdns.org/app/descargas/asistente-unab-360.apk) · [App Android](android/README.md)
 
 </div>
 

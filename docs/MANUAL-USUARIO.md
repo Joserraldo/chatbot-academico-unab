@@ -234,7 +234,7 @@ Escribe `Muéstrame las novedades de la universidad` o `¿Qué noticias hay hoy?
 
 ### Instalar el APK
 
-1. Obtén el archivo `app-debug.apk` que entrega el equipo (o compílalo con `./gradlew assembleDebug` en la carpeta `android/`, ver [android/README.md](../android/README.md)). La ruta de salida es `android/app/build/outputs/apk/debug/app-debug.apk`.
+1. Descárgalo desde el celular en <https://chatbotunab.duckdns.org/app/descargas/asistente-unab-360.apk>, o escanea el QR **📱 App Android** de la pantalla de inicio de la web (versión 2.1). También está en el repo en `web/descargas/asistente-unab-360.apk`, o se compila con `./gradlew assembleDebug` en `android/` ([android/README.md](../android/README.md)).
 2. Cópialo al teléfono y ábrelo. Si Android lo pide, activa **Instalar apps de origen desconocido** para el explorador de archivos que usas. Alternativa con el teléfono conectado por USB: `adb install -r app-debug.apk`.
 3. Abre **Asistente UNAB 360**.
 
